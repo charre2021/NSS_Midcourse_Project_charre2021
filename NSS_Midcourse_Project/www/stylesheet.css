@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Baskervville&display=swap');
+
+body {
+  background: url("wood.jpg") no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  background-color: #f8f8ff;
+  font-family: 'Baskervville', serif;
+}
+
+.navbar {
+  border: none;
+}
+
+.navbar-brand {
+  font-weight: bold;
+  font-size: 30px;
+  line-height: 30px;
+}
+
+.navbar-default .navbar-brand,
+.navbar-default .navbar-brand:hover {
+  color: #fafafa;
+}
+
+.navbar-default {
+  background-color: #000029;
+}
+
+.navbar-nav {
+  float: right;
+}
+
+.navbar-default .navbar-nav > li > a,
+.navbar-default .navbar-nav > li > a:hover {
+  color: #fafafa;
+}
+
+.navbar-default .navbar-nav > .active > a, 
+.navbar-default .navbar-nav > .active > a:focus, 
+.navbar-default .navbar-nav > .active > a:hover {
+  color: #000029;
+  background-color: #fafafa;
+}
+
+.well {
+  background-color: #fafafa;
+  box-shadow: 8px 8px 24px 8px #000;
+  border-radius: 16px;
+}
+
+#textbox {
+  margin: auto;
+  color: #000000;
+  background-color: #fafafa;
+  box-shadow: 8px 8px 24px 8px #000;
+  border-radius: 16px;
+  text-align: justify;
+  height: 600px;
+  width: 500px;
+  padding-left: 25px;
+  padding-right: 25px;
+  padding-bottom: 10px;
+  padding-top: 10px;
+}
+
+.nav-tabs {
+  border-bottom: transparent;
+}
+
+.nav-tabs > li > a,
+.nav-tabs > li > a:hover {
+  color: #fafafa;
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.nav-tabs > li.active > a, 
+.nav-tabs > li.active > a:focus, 
+.nav-tabs > li.active > a:hover {
+  color: #000000;
+  background-color: #fafafa;
+}
