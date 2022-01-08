@@ -126,6 +126,8 @@ all_audio_analysis <- map(all_tracks$track_id, function(track_id) {
     unnest_wider(pitches) %>%
     unnest_wider(timbre)
   
+  print(track_id)
+  
   # Replace all segment start time values with applicable section start time values.
   segment_analysis$start <- map(segment_analysis$start, function(segment_start) {
     map2(section_analysis$section_start, section_analysis$section_end, 
@@ -133,7 +135,7 @@ all_audio_analysis <- map(all_tracks$track_id, function(track_id) {
            if(between(segment_start, section_start, section_end)){
              segment_start <- section_start
            }
-         }) %>% plyr::compact(.) %>% as.numeric(.[1])
+         }) %>% plyr::compact(.) %>% as.numeric(.) %>% .[1]
   }) %>% as.numeric(.)
   
   # Initially combine section and segment information.
@@ -173,7 +175,7 @@ all_audio_analysis <- map(all_tracks$track_id, function(track_id) {
                                section_analysis, 
                                by = "section_start")
   
-  return(section_analysis)
+  return(audio_analysis)
   
   # Then bind each segment analysis together and join with track analysis.
 }) %>%
@@ -182,4 +184,3 @@ all_audio_analysis <- map(all_tracks$track_id, function(track_id) {
 
 # Write a csv file to a local folder.
 write_csv(all_audio_analysis, "data/all_audio_analysis.csv")
-
