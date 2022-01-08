@@ -1,9 +1,8 @@
 library(tidyverse)
-library(stringr)
 
 all_audio_analysis <- read_csv("data/all_audio_analysis.csv")
 
-# Vector for reordering tidy_descriptive_values later.
+# Vectors for reordering datasets later.
 tdv_col_order <- c("track_id",
                    "track_name",
                    "composer_id",
@@ -16,6 +15,17 @@ tdv_col_order <- c("track_id",
                    "confidence_or_value",
                    "descriptive_value")
 
+tpt_col_order <- c("track_id",
+                   "track_name",
+                   "composer_id",
+                   "composer",
+                   "composer_image",
+                   "section_start",
+                   "section_duration",
+                   "mean_or_median",
+                   "pitch_or_timbre",
+                   "class",
+                   "score")
 
 # Rename all timbre values to add "class" for consistency later.
 rename_timbre <- function(variable_names) {
@@ -71,16 +81,13 @@ tidy_descriptive_values <- all_audio_analysis %>%
          track_or_section_value = str_to_title(track_or_section_value)) %>% 
   # Talking track that needs to be removed.
   filter(track_id != "1PAl9YSmvWNreOH7UFkesP") %>% 
-  select(-c(starts_with("mean"),
-            starts_with("median")),
-         -section_confidence,
-         -section_end) %>% 
   .[,tdv_col_order]
 
 write_rds(tidy_descriptive_values, "data/tidy_descriptive_values.rds")
 
 # Pivot based on mean/median pitch/timbre values.
 tidy_pitch_timbre <- all_audio_analysis %>% 
+  
   rename_with(.fn = rename_timbre, .cols = c(starts_with("mean_timbre"),
                                              starts_with("median_timbre"))) %>% 
   pivot_longer(cols = c(starts_with("mean"),
@@ -92,7 +99,17 @@ tidy_pitch_timbre <- all_audio_analysis %>%
                     "pitch_or_timbre", 
                     "delete_class", 
                     "delete_score", 
-                    "number"),
+                    "class"),
            sep = "_") %>% 
-  select(-c("delete_class", "delete_score"))
+  filter(track_id != "1PAl9YSmvWNreOH7UFkesP") %>%
+  mutate(mean_or_median = str_to_title(mean_or_median),
+         pitch_or_timbre = str_to_title(pitch_or_timbre),
+         class = as.numeric(class),
+         class = if_else(pitch_or_timbre == "Timbre",
+                         class + 1,
+                         class),
+         class = as.factor(class)) %>% 
+  .[,tpt_col_order]
+
+write_rds(tidy_pitch_timbre, "data/tidy_pitch_timbre.rds")
 
