@@ -1,7 +1,40 @@
 shinyServer(function(input, output, session) {
   
+  filtered_by_composer <- reactive({
+    composer_data %>% 
+      filter(composer == input$composer)
+  })
+  
+  output$composer <- renderUI({
+    imgURL <- filtered_by_composer() %>%
+      select(composer_image) %>%
+      unique() %>% 
+      toString()
+    tags$img(src = imgURL, 
+             width = 300, 
+             height = 300)
+    })
+  
+  
+  
+  observeEvent(input$composer,{
+    song_choices <- filtered_by_composer() %>%
+      select(track_name) %>% 
+      rename("Name" = "track_name")
+    updateSelectizeInput(session,
+                         "updateSong",
+                         choices = song_choices)
+  })
+  
+  
   new_song <- reactive({
-    query <- input$song
+    query <- filtered_by_composer() %>% 
+      filter(track_name == input$updateSong) %>% 
+      select(track_id) %>% 
+      unique()
+    
+    print(query)
+    
     paste0("https://open.spotify.com/embed/track/", 
            query, 
            "?utm_source=generator&theme=0")

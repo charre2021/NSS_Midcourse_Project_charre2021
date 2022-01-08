@@ -37,24 +37,25 @@ shinyUI(
                  # Test Values
                  selectInput("composer",
                              "Select Composer:",
-                             choices = c("Wolfgang Amadeus Mozart",
-                                         "Johann Sebastian Bach",
-                                         "Richard Wagner")
+                             choices = unique(composer_data$composer)
                  ),
                  # Test Values, will need to correspond to actual names.
                  # Will also need to be filtered by selected composer.
-                 selectInput("song", 
-                             "Select Song:", 
-                             choices = c("2twkod822LTomifvDubtM8",
-                                         "6SpLc7EXZIPpy0sVko0aoU",
-                                         "1HNE2PX70ztbEl6MLxrpNL"),
-                             selected = "2twkod822LTomifvDubtM8"),
+                 selectizeInput("updateSong", 
+                                "Select Song:", 
+                                choices = NULL),
+                 
                  htmlOutput("frame")
                ),
                mainPanel(
                  tabsetPanel(
                    tabPanel("", 
-                            icon = icon('chart-pie','fa-2x')
+                            icon = icon('chart-pie','fa-2x'),
+                            fluidRow(
+                             column(width = 6,
+                                    uiOutput("composer")),
+                             column(width = 6)
+                            )
                    ),
                    tabPanel("", 
                             icon = icon('chart-line','fa-2x')

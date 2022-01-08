@@ -2,7 +2,6 @@ library(tidyverse)
 library(spotifyr)
 library(rjson)
 library(stringr)
-library(lubridate)
 
 # Read Spotify client id and secret from json file.
 credentials <- fromJSON(file = "data/credentials.json")
@@ -35,7 +34,7 @@ all_tracks <- map(my_playlists$id, function(playlist_id) {
   
   # Perform some composer clean-up through majority rule.
   primary <- dummy %>% 
-    count(composer) %>% 
+    count(composer, sort = TRUE) %>% 
     .[["composer"]] %>% 
     .[[1]]
   
@@ -125,8 +124,6 @@ all_audio_analysis <- map(all_tracks$track_id, function(track_id) {
     # Break out all pitch and timbre vectors into separate columns.
     unnest_wider(pitches) %>%
     unnest_wider(timbre)
-  
-  print(track_id)
   
   # Replace all segment start time values with applicable section start time values.
   segment_analysis$start <- map(segment_analysis$start, function(segment_start) {

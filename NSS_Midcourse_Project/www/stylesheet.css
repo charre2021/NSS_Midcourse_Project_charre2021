@@ -83,3 +83,10 @@ body {
   color: #000000;
   background-color: #fafafa;
 }
+
+/* Adjust later. Color, shadow and border-radius on active panes.
+#tab-9066-1.tab-pane > .active {
+  background-color: #fafafa;
+  box-shadow: 8px 8px 24px 8px #000;
+  border-radius: 16px;
+} */
