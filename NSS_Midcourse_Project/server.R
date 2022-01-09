@@ -1,18 +1,22 @@
 shinyServer(function(input, output, session) {
   
   filtered_by_composer <- reactive({
-    composer_data %>% 
+    general_audio_values %>% 
       filter(composer == input$composer)
+  })
+  
+  output$composer_name <- renderText({
+    input$composer
   })
   
   output$composer <- renderUI({
     imgURL <- filtered_by_composer() %>%
       select(composer_image) %>%
-      unique() %>% 
-      toString()
-    tags$img(src = imgURL, 
-             width = 300, 
-             height = 300)
+      unique()
+    
+    tags$img(src = imgURL,
+             height = 400,
+             width = 350)
     })
   
   
@@ -32,8 +36,6 @@ shinyServer(function(input, output, session) {
       filter(track_name == input$updateSong) %>% 
       select(track_id) %>% 
       unique()
-    
-    print(query)
     
     paste0("https://open.spotify.com/embed/track/", 
            query, 

@@ -37,7 +37,7 @@ shinyUI(
                  # Test Values
                  selectInput("composer",
                              "Select Composer:",
-                             choices = unique(composer_data$composer)
+                             choices = unique(general_audio_values$composer)
                  ),
                  # Test Values, will need to correspond to actual names.
                  # Will also need to be filtered by selected composer.
@@ -53,8 +53,13 @@ shinyUI(
                             icon = icon('chart-pie','fa-2x'),
                             fluidRow(
                              column(width = 6,
+                                    textOutput("composer_name"),
                                     uiOutput("composer")),
                              column(width = 6)
+                            ),
+                            fluidRow(
+                              column(width = 6),
+                              column(width = 6)
                             )
                    ),
                    tabPanel("", 

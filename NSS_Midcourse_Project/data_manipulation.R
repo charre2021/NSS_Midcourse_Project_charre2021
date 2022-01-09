@@ -2,6 +2,24 @@ library(tidyverse)
 
 all_audio_analysis <- read_csv("data/all_audio_analysis.csv")
 
+# Replacing missing/bad pictures with better links.
+mozart_picture <- "https://utahsymphony.org/app/uploads/sites/2/2018/08/Wolfgang-amadeus-mozart.jpg"
+schoenberg_picture <- "https://i.scdn.co/image/6baf76a199780038b113c76aaa8d62e467fb45b5"
+
+# Vector for renaming pitch classes.
+pitch_classes <- c("0" = "C",
+                   "1" = "C#/Db",
+                   "2" = "D",
+                   "3" = "D#/Eb",
+                   "4" = "E",
+                   "5" = "F",
+                   "6" = "F#/Gb",
+                   "7" = "G",
+                   "8" = "G#/Ab",
+                   "9" = "A",
+                   "10" = "A#/Bb",
+                   "11" = "B")
+
 # Vectors for reordering datasets later.
 tdv_col_order <- c("track_id",
                    "track_name",
@@ -78,7 +96,12 @@ tidy_descriptive_values <- all_audio_analysis %>%
                                                                    str_remove(descriptive_value_type, 
                                                                               "_confidence"),
                                                                    descriptive_value_type),"_", " ")),
-         track_or_section_value = str_to_title(track_or_section_value)) %>% 
+         track_or_section_value = str_to_title(track_or_section_value),
+         composer_image = if_else(composer == "Wolfgang Amadeus Mozart", 
+                                  mozart_picture,
+                                  if_else(composer == "Arnold Schoenberg",
+                                          schoenberg_picture,
+                                          composer_image))) %>% 
   # Talking track that needs to be removed.
   filter(track_id != "1PAl9YSmvWNreOH7UFkesP") %>% 
   .[,tdv_col_order]
@@ -108,8 +131,19 @@ tidy_pitch_timbre <- all_audio_analysis %>%
          class = if_else(pitch_or_timbre == "Timbre",
                          class + 1,
                          class),
-         class = as.factor(class)) %>% 
+         class = as.character(class),
+         class = if_else(pitch_or_timbre == "Pitch",
+                         pitch_classes[class],
+                         class),
+         class = as.factor(class),
+         composer_image = if_else(composer_id == "4NJhFmfw43RLBLjQvxDuRS", 
+                                  mozart_picture,
+                                  if_else(composer_id == "5U827e4jbYz6EjtN0fIDt9",
+                                          schoenberg_picture,
+                                          composer_image))) %>% 
   .[,tpt_col_order]
 
 write_rds(tidy_pitch_timbre, "data/tidy_pitch_timbre.rds")
+
+
 

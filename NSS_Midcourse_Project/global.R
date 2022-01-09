@@ -4,4 +4,5 @@ library(shinydashboard)
 library(gganimate)
 library(waiter)
 
-composer_data <- read_csv("data/all_audio_analysis.csv")
+pitch_timbre <- read_rds("data/tidy_pitch_timbre.rds")
+general_audio_values <- read_rds("data/tidy_descriptive_values.rds")
