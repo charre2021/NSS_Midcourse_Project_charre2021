@@ -53,7 +53,9 @@ all_audio_analysis <- all_audio_analysis %>%
     composer_id == "6uRJnvQ3f8whVnmeoecv5Z" |
       composer_id == "4GQwgdcDQwqtcHICjUNndp" |
       composer_id == "6n7nd5iceYpXVwcx8VPpxF" ~ "Romantic"),
-    composer_period = as_factor(composer_period))
+    composer_period = as_factor(composer_period),
+    section_start = seconds_to_period(round(section_start,0)),
+    section_duration = seconds_to_period(round(section_duration,0)))
 
 # Replacing missing/bad pictures with better links.
 mozart_picture <- "https://utahsymphony.org/app/uploads/sites/2/2018/08/Wolfgang-amadeus-mozart.jpg"
