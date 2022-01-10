@@ -30,9 +30,11 @@ shinyServer(function(input, output, session) {
   observeEvent(input$updateSong,{
     section_choices <- pt_filtered_by_composer_and_song() %>% 
       filter(pitch_or_timbre == "Pitch",
-             mean_or_median == input$mean_or_median) %>% 
-      select(section_start) %>% 
+             mean_or_median == input$mean_or_median) %>%
+      rename("Section Starting At:" = "section_start") %>% 
+      select(`Section Starting At:`) %>% 
       unique()
+    
     updateSelectizeInput(session,
                          "section_start",
                          choices = section_choices)
@@ -56,7 +58,7 @@ shinyServer(function(input, output, session) {
     
     tags$img(src = imgURL,
              height = 400,
-             width = 375)
+             width = 350)
   })
   
   output$histogram <- renderPlot({
@@ -64,55 +66,84 @@ shinyServer(function(input, output, session) {
       geom_histogram(aes(fill = ..count..),
                      bins = 30,
                      breaks = seq(0,1,0.1),
-                     color = "black",
-                     size = 0.5)
+                     color = "black")
     
     histogram_plot <- histogram_plot +
       scale_x_continuous(expand = c(0.01,0.01)) +
       scale_y_continuous(expand = c(0,0),
                          limits = c(0, max(ggplot_build(histogram_plot)$data[[1]]$count)*1.1)) +
-      labs(title = "Selected Value Confidence by Composer",
-           x = "Confidence",
-           y = "Count within Track or Section") +
+      labs(title = "Distribution of Composer Value Confidence",
+           x = "Confidence Value",
+           y = "Count on Track or Section Basis") +
       theme(plot.title = element_text(hjust = 0.5),
-            text = element_text(size = 16, 
-                                family = "Baskervville"),
+            text = element_text(size = 12,
+                                family = "Baskervville",
+                                color = "#000000"),
             panel.background = element_rect(fill = "#fafafa", colour = "#000000"),
             panel.grid = element_blank(), 
-            plot.background = element_rect(fill = "#fafafa"),
-            legend.position = "none")
+            plot.background = element_rect(fill = "#fafafa", color = NA),
+            legend.position = "none",
+            plot.margin = margin(t = 2, r = 2, b = 2, l = 2))
     
     print(histogram_plot)
   })
   
   output$circlebarplot <- renderPlot({
-    circlebarplot <- ggplot(circular_bar_plot_filter(), 
-           aes(x = class, 
-               y = score)) +
-      geom_bar(stat = "identity", 
-               fill = "blue")
     
-    circlebarplot <- circlebarplot +
-      ylim(-1, max(ggplot_build(circlebarplot)$data[[1]]$y) * 1.1) +
-      coord_polar(start = -pi/12) +
-      geom_text(aes(x = circular_bar_plot_filter()$class,
-                    y = -0.1,
-                    label = circular_bar_plot_filter()$class),
-                inherit.aes = FALSE) +
-      theme(panel.grid = element_blank(),
-            panel.background = element_rect(fill = "#fafafa", 
-                                            colour = "#000000"),
-            plot.background = element_rect(fill = "#fafafa"),
-            axis.text = element_blank(),
-            axis.title = element_blank())
+    if(length(circular_bar_plot_filter()$class) == 0)
+      return()
     
-    print(circlebarplot)
+    isolate({
+      
+      scale <- 1000
+      
+      circlebarplot <- circular_bar_plot_filter() %>% 
+        ggplot(aes(x = class, 
+                   y = score * scale,
+                   fill = class)) +
+        geom_bar(stat = "identity",
+                 color = "black") +
+        scale_fill_manual(values = pitch_color_vector)
+      
+      score_points <- ggplot_build(circlebarplot)$data[[1]]$y
+      
+      circlebarplot <- circlebarplot +
+        ylim(-scale, max(score_points) * 1.2) +
+        coord_polar(start = -pi/12) +
+        geom_text(aes(x = class,
+                      y = -scale/4.1,
+                      label = class),
+                  size = 4.25,
+                  family = "Baskervville",
+                  inherit.aes = FALSE) +
+        geom_text(aes(x = class,
+                      y = max(score_points) * 1.2,
+                      label = round(score,2)),
+                  size = 4.25,
+                  family = "Baskervville",
+                  inherit.aes = FALSE) +
+        labs(title = "Relative Proportion of Pitches Used in this Track") +
+        theme_void() +
+        theme(plot.title = element_text(hjust = 0.5),
+              text = element_text(size = 12,
+                                  family = "Baskervville",
+                                  color = "#000000"),
+              panel.background = element_rect(fill = "#fafafa", 
+                                              colour = "#000000"),
+              legend.position = "none",
+              plot.background = element_rect(fill = "#fafafa", color = NA),
+              plot.margin = margin(t = 0, r = 0, b = 0, l = 0)) 
+      
+      plot(circlebarplot)
+    })
   })
   
   observeEvent(input$composer,{
+    
     song_choices <- filtered_by_composer() %>%
       select(track_name) %>% 
       rename("Name" = "track_name")
+    
     updateSelectizeInput(session,
                          "updateSong",
                          choices = song_choices)
