@@ -22,7 +22,20 @@ shinyServer(function(input, output, session) {
   
   circular_bar_plot_filter <- reactive({
     pt_filtered_by_composer_and_song() %>% 
-      filter(pitch_or_timbre == "Pitch")
+      filter(pitch_or_timbre == "Pitch",
+             mean_or_median == input$mean_or_median,
+             section_start == input$section_start)
+  })
+  
+  observeEvent(input$updateSong,{
+    section_choices <- pt_filtered_by_composer_and_song() %>% 
+      filter(pitch_or_timbre == "Pitch",
+             mean_or_median == input$mean_or_median) %>% 
+      select(section_start) %>% 
+      unique()
+    updateSelectizeInput(session,
+                         "section_start",
+                         choices = section_choices)
   })
   
   histogram_filter <- reactive({
@@ -79,18 +92,19 @@ shinyServer(function(input, output, session) {
       geom_bar(stat = "identity", 
                fill = "blue")
     
-    # circlebarplot <- circlebarplot +
-    #   ylim(-1,max(ggplot_build(histogram_plot)) + 
-    #   coord_polar(start = -pi/12) +
-    #   geom_text(aes(x = class, 
-    #                 y = -0.1, 
-    #                 label = class)) +
-    #   theme(
-    #     panel.grid = element_blank(),
-    #     panel.background = element_rect(fill = "#fafafa", colour = "#000000"),
-    #     plot.background = element_rect(fill = "#fafafa"),
-    #     axis.text = element_blank(),
-    #     axis.title = element_blank()) 
+    circlebarplot <- circlebarplot +
+      ylim(-1, max(ggplot_build(circlebarplot)$data[[1]]$y) * 1.1) +
+      coord_polar(start = -pi/12) +
+      geom_text(aes(x = circular_bar_plot_filter()$class,
+                    y = -0.1,
+                    label = circular_bar_plot_filter()$class),
+                inherit.aes = FALSE) +
+      theme(panel.grid = element_blank(),
+            panel.background = element_rect(fill = "#fafafa", 
+                                            colour = "#000000"),
+            plot.background = element_rect(fill = "#fafafa"),
+            axis.text = element_blank(),
+            axis.title = element_blank())
     
     print(circlebarplot)
   })

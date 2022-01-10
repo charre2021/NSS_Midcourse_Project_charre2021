@@ -76,6 +76,16 @@ shinyUI(
                                                ),
                                                plotOutput("histogram")),
                                         column(width = 6,
+                                               awesomeRadio(
+                                                 inputId = "mean_or_median",
+                                                 label = "Select Median or Median:", 
+                                                 choices = c("Mean", "Median"),
+                                                 selected = "Mean",
+                                                 inline = TRUE
+                                               ),
+                                               selectizeInput("section_start",
+                                                              "Select Section:",
+                                                              choices = NULL),
                                                plotOutput("circlebarplot"))
                                       )
                              ),
