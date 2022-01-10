@@ -68,6 +68,7 @@ body {
 
 .nav-tabs {
   border-bottom: transparent;
+  box-shadow: none;
 }
 
 .nav-tabs > li > a,
@@ -75,6 +76,7 @@ body {
   color: #fafafa;
   background-color: transparent;
   border-color: transparent;
+  box-shadow: none;
 }
 
 .nav-tabs > li.active > a, 
@@ -82,11 +84,35 @@ body {
 .nav-tabs > li.active > a:hover {
   color: #000000;
   background-color: #fafafa;
+  border-radius: 16px;
+  border-color: transparent;
+  box-shadow: none;
 }
 
-/* Adjust later. Color, shadow and border-radius on active panes.
-#tab-9066-1.tab-pane > .active {
+iframe {
+  border-radius: 16px;
+}
+
+[data-value~="descriptive_active"] {
   background-color: #fafafa;
   box-shadow: 8px 8px 24px 8px #000;
   border-radius: 16px;
-} */
+  padding-left: 25px;
+  padding-right: 25px;
+  padding-bottom: 10px;
+  padding-top: 10px;
+}
+
+[data-value~="logistic_active"] {
+  background-color: #fafafa;
+  box-shadow: 8px 8px 24px 8px #000;
+  border-radius: 16px;
+  padding-left: 25px;
+  padding-right: 25px;
+  padding-bottom: 10px;
+  padding-top: 10px;
+}
+
+#composer {
+  
+}

@@ -2,6 +2,59 @@ library(tidyverse)
 
 all_audio_analysis <- read_csv("data/all_audio_analysis.csv")
 
+# Adding a period column.
+medieval_renaissance_composers <- c("Hildegard von Bingen",
+                                    "Guillaume Dufay",
+                                    "Josquin des Prez",
+                                    "Claudio Monteverdi")
+
+baroque_classical_composers <- c("Henry Purcell",
+                                 "Antonio Vivaldi",
+                                 "Ludwig van Beethoven",
+                                 "George Frideric Handel",
+                                 "Johann Sebastian Bach",
+                                 "Wolfgang Amadeus Mozart",
+                                 "Franz Schubert")
+
+romantic_composers <- c("Sergei Rachmaninoff",
+                        "Richard Strauss",
+                        "Gabriel Fauré",
+                        "Gustav Mahler",
+                        "Felix Mendelssohn",
+                        "Antonín Dvorák",
+                        "Ralph Vaughan Williams",
+                        "Franz Liszt",
+                        "Frédéric Chopin",
+                        "Robert Schumann",
+                        "Giacomo Puccini",
+                        "Giuseppe Verdi",
+                        "Richard Wagner",
+                        "Johannes Brahms",
+                        "Pyotr Ilyich Tchaikovsky")
+
+modern_postmodern_composers <- c("Aaron Copland",
+                                 "Charles Ives",
+                                 "Igor Stravinsky",
+                                 "Arvo Pärt",
+                                 "Krzysztof Penderecki",
+                                 "Dmitri Shostakovich",
+                                 "Arnold Schoenberg",
+                                 "Eric Whitacre",
+                                 "Maurice Ravel",
+                                 "Claude Debussy")
+
+all_audio_analysis <- all_audio_analysis %>% 
+  mutate(composer_period = case_when(
+    composer %in% medieval_renaissance_composers ~ "Medieval/Renaissance",
+    composer %in% baroque_classical_composers ~ "Baroque/Classical",
+    composer %in% romantic_composers ~ "Romantic",
+    composer %in% modern_postmodern_composers ~ "Modern/Post-Modern",
+    # Handling Dvorak.
+    composer_id == "6uRJnvQ3f8whVnmeoecv5Z" |
+      composer_id == "4GQwgdcDQwqtcHICjUNndp" |
+      composer_id == "6n7nd5iceYpXVwcx8VPpxF" ~ "Romantic"),
+    composer_period = as_factor(composer_period))
+
 # Replacing missing/bad pictures with better links.
 mozart_picture <- "https://utahsymphony.org/app/uploads/sites/2/2018/08/Wolfgang-amadeus-mozart.jpg"
 schoenberg_picture <- "https://i.scdn.co/image/6baf76a199780038b113c76aaa8d62e467fb45b5"
@@ -23,8 +76,8 @@ pitch_classes <- c("0" = "C",
 # Vectors for reordering datasets later.
 tdv_col_order <- c("track_id",
                    "track_name",
-                   "composer_id",
                    "composer",
+                   "composer_period",
                    "composer_image",
                    "section_start",
                    "section_duration",
@@ -35,8 +88,8 @@ tdv_col_order <- c("track_id",
 
 tpt_col_order <- c("track_id",
                    "track_name",
-                   "composer_id",
                    "composer",
+                   "composer_period",
                    "composer_image",
                    "section_start",
                    "section_duration",
@@ -135,7 +188,7 @@ tidy_pitch_timbre <- all_audio_analysis %>%
          class = if_else(pitch_or_timbre == "Pitch",
                          pitch_classes[class],
                          class),
-         class = as.factor(class),
+         class = as_factor(class),
          composer_image = if_else(composer_id == "4NJhFmfw43RLBLjQvxDuRS", 
                                   mozart_picture,
                                   if_else(composer_id == "5U827e4jbYz6EjtN0fIDt9",
@@ -145,5 +198,8 @@ tidy_pitch_timbre <- all_audio_analysis %>%
 
 write_rds(tidy_pitch_timbre, "data/tidy_pitch_timbre.rds")
 
+composer_vec <- tidy_descriptive_values %>% 
+  select(composer) %>% 
+  unique()
 
 

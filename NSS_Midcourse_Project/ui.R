@@ -48,23 +48,49 @@ shinyUI(
                  htmlOutput("frame")
                ),
                mainPanel(
-                 tabsetPanel(
-                   tabPanel("", 
-                            icon = icon('chart-pie','fa-2x'),
-                            fluidRow(
-                             column(width = 6,
-                                    textOutput("composer_name"),
-                                    uiOutput("composer")),
-                             column(width = 6)
-                            ),
-                            fluidRow(
-                              column(width = 6),
-                              column(width = 6)
-                            )
-                   ),
-                   tabPanel("", 
-                            icon = icon('chart-line','fa-2x')
-                   )
+                 tabsetPanel(id = "primary_tabs",
+                             tabPanel("",
+                                      icon = icon('chart-pie','fa-2x'),
+                                      value = "descriptive_active",
+                                      fluidRow(
+                                        column(width = 6,
+                                               textOutput("composer_name"),
+                                               uiOutput("composer")),
+                                        column(width = 6)
+                                      ),
+                                      fluidRow(
+                                        column(width = 6,
+                                               awesomeRadio(
+                                                 inputId = "section_or_track",
+                                                 label = "Track or Section Basis:", 
+                                                 choices = c("Track", "Section"),
+                                                 selected = "Track",
+                                                 inline = TRUE
+                                               ),
+                                               awesomeRadio(
+                                                 inputId = "value_type",
+                                                 label = "Select Value Type:", 
+                                                 choices = c("Tempo", "Key", "Time Signature"),
+                                                 selected = "Key",
+                                                 inline = TRUE
+                                               ),
+                                               plotOutput("histogram")),
+                                        column(width = 6,
+                                               plotOutput("circlebarplot"))
+                                      )
+                             ),
+                             tabPanel("", 
+                                      icon = icon('chart-line','fa-2x'),
+                                      value = "logistic_active",
+                                      fluidRow(
+                                        column(width = 6),
+                                        column(width = 6)
+                                      ),
+                                      fluidRow(
+                                        column(width = 6),
+                                        column(width = 6)
+                                      )
+                             )
                  )
                )
              )
