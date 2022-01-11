@@ -34,17 +34,36 @@ shinyUI(
              icon = icon('chart-bar','fa-2x'),
              sidebarLayout(
                sidebarPanel(
-                 # Test Values
-                 selectInput("composer",
-                             "Select Composer:",
-                             choices = unique(general_audio_values$composer)
+                 pickerInput(inputId = "composer",
+                             label = "Select Composer:",
+                             choices = unique(general_audio_values$composer),
+                             selected = NULL,
+                             options = list(
+                               `live-search` = TRUE)
                  ),
-                 # Test Values, will need to correspond to actual names.
-                 # Will also need to be filtered by selected composer.
                  selectizeInput("updateSong", 
                                 "Select Song:", 
                                 choices = NULL),
-                 
+                 selectInput(
+                   inputId = "first_comparison_group",
+                   label = "Choose Comparison Group", 
+                   choices = c("Medieval/Renaissance",
+                               "Baroque/Classical",
+                               "Romantic",
+                               "Modern/Post-Modern",
+                               "All"),
+                   selected = "Medieval/Renaissance"
+                 ),
+                 selectInput(
+                   inputId = "second_comparison_group",
+                   label = "Choose Comparison Group", 
+                   choices = c("Medieval/Renaissance",
+                               "Baroque/Classical",
+                               "Romantic",
+                               "Modern/Post-Modern",
+                               "All"),
+                   selected = "Medieval/Renaissance"
+                 ),
                  htmlOutput("frame")
                ),
                mainPanel(
@@ -53,13 +72,10 @@ shinyUI(
                                       icon = icon('chart-pie','fa-2x'),
                                       value = "descriptive_active",
                                       fluidRow(
-                                        column(width = 6,
-                                               textOutput("composer_name"),
-                                               uiOutput("composer")),
-                                        column(width = 6)
-                                      ),
-                                      fluidRow(
-                                        column(width = 6,
+                                        column(width = 3,
+                                               uiOutput("composer")
+                                        ),
+                                        column(width = 3,
                                                awesomeRadio(
                                                  inputId = "section_or_track",
                                                  label = "Track or Section Basis:", 
@@ -68,13 +84,28 @@ shinyUI(
                                                  inline = TRUE
                                                ),
                                                awesomeRadio(
-                                                 inputId = "value_type",
-                                                 label = "Select Value Type:", 
-                                                 choices = c("Tempo", "Key", "Time Signature"),
-                                                 selected = "Key",
+                                                 inputId = "comparison_value",
+                                                 label = "Select Value to Compare On:", 
+                                                 choices = c("Tempo", 
+                                                             "Loudness",
+                                                             "Key",
+                                                             "Timbre",
+                                                             "Time Signature"),
+                                                 selected = "Tempo"
+                                               ),
+                                               awesomeRadio(
+                                                 inputId = "confidence_or_value",
+                                                 label = "Select Confidence or Value:", 
+                                                 choices = c("Confidence", "Value"),
+                                                 selected = "Confidence",
                                                  inline = TRUE
                                                ),
-                                               plotOutput("histogram")),
+                                        ),
+                                        column(width = 6,
+                                               plotOutput("comparison_jitter")
+                                        )
+                                      ),
+                                      fluidRow(
                                         column(width = 6,
                                                awesomeRadio(
                                                  inputId = "mean_or_median",
@@ -83,13 +114,17 @@ shinyUI(
                                                  selected = "Mean",
                                                  inline = TRUE
                                                ),
+                                               plotOutput("circlebarplot")
+                                        ),
+                                        column(width = 6,
                                                selectizeInput("section_start",
                                                               "Select Section:",
                                                               choices = NULL),
-                                               plotOutput("circlebarplot"))
+                                               plotOutput("timbrebarplot")
+                                        )
                                       )
                              ),
-                             tabPanel("", 
+                             tabPanel("",
                                       icon = icon('chart-line','fa-2x'),
                                       value = "logistic_active",
                                       fluidRow(

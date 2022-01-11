@@ -20,17 +20,25 @@ shinyServer(function(input, output, session) {
       filter(track_name == input$updateSong)
   })
   
-  circular_bar_plot_filter <- reactive({
+  bar_plot_filter <- reactive({
     pt_filtered_by_composer_and_song() %>% 
-      filter(pitch_or_timbre == "Pitch",
-             mean_or_median == input$mean_or_median,
+      filter(mean_or_median == input$mean_or_median,
              section_start == input$section_start)
+  })
+  
+  circular_bar_plot_filter <- reactive({
+    bar_plot_filter() %>% 
+      filter(pitch_or_timbre == "Pitch")
+  })
+  
+  timbre_bar_plot_filter <- reactive({
+    bar_plot_filter() %>% 
+      filter(pitch_or_timbre == "Timbre")
   })
   
   observeEvent(input$updateSong,{
     section_choices <- pt_filtered_by_composer_and_song() %>% 
-      filter(pitch_or_timbre == "Pitch",
-             mean_or_median == input$mean_or_median) %>%
+      filter(mean_or_median == input$mean_or_median) %>%
       rename("Section Starting At:" = "section_start") %>% 
       select(`Section Starting At:`) %>% 
       unique()
@@ -40,15 +48,70 @@ shinyServer(function(input, output, session) {
                          choices = section_choices)
   })
   
-  histogram_filter <- reactive({
-    filtered_by_composer() %>% 
+  hex_filter <- reactive({
+    
+    composer_tbl <- filtered_by_composer() %>% 
       filter(track_or_section_value == input$section_or_track,
-             descriptive_value_type == input$value_type,
-             confidence_or_value == "Confidence")
-  })
-  
-  output$composer_name <- renderText({
-    input$composer
+             descriptive_value_type == input$comparison_value,
+             confidence_or_value == input$confidence_or_value) %>% 
+      mutate(group = composer) %>% 
+      select(group, descriptive_value)
+    
+    filter_for_group <- function(composer_period_group) {
+      tbl <- general_audio_values %>% 
+        filter(composer_period == composer_period_group,
+               track_or_section_value == input$section_or_track,
+               descriptive_value_type == input$comparison_value,
+               confidence_or_value == input$confidence_or_value) %>% 
+        mutate(group = composer_period) %>% 
+        select(group, descriptive_value)
+      return(tbl)
+    }
+    
+    filter_for_all <- function() {
+      tbl <- general_audio_values %>% 
+        filter(track_or_section_value == input$section_or_track,
+               descriptive_value_type == input$comparison_value,
+               confidence_or_value == input$confidence_or_value) %>% 
+        mutate(group = "All") %>% 
+        select(group, descriptive_value)
+      return(tbl)
+    }
+    
+    if(input$first_comparison_group != "All") {
+      first_comparison_group_tbl <- filter_for_group(input$first_comparison_group)
+    } else {
+      first_comparison_group_tbl <- filter_for_all()
+    }
+    
+    if(input$first_comparison_group != "All") {
+      second_comparison_group_tbl <- filter_for_group(input$second_comparison_group)
+    } else {
+      second_comparison_group_tbl <- filter_for_all()
+    }
+    
+    if(input$comparison_value == "Key" & 
+       confidence_or_value == "Value") {
+      final_tbl <- bind_rows(composer_tbl, 
+                             first_comparison_group_tbl, 
+                             second_comparison_group_tbl) %>% 
+        mutate(descriptive_value = as.factor(descriptive_value),
+               descriptive_value = pitch_classes[descriptive_value])
+    } else if(input$comparison_value == "Time Signature" & 
+              confidence_or_value == "Value") {
+      final_tbl <- bind_rows(composer_tbl, 
+                             first_comparison_group_tbl, 
+                             second_comparison_group_tbl) %>% 
+        mutate(descriptive_value = as.factor(descriptive_value),
+               descriptive_value = pitch_classes[descriptive_value])
+    } else {
+      final_tbl <- bind_rows(composer_tbl, 
+                             first_comparison_group_tbl, 
+                             second_comparison_group_tbl)
+    }
+    
+    return(final_tbl)
+    
   })
   
   output$composer <- renderUI({
@@ -57,8 +120,8 @@ shinyServer(function(input, output, session) {
       unique()
     
     tags$img(src = imgURL,
-             height = 400,
-             width = 350)
+             height = 250,
+             width = 235)
   })
   
   output$histogram <- renderPlot({
@@ -108,7 +171,7 @@ shinyServer(function(input, output, session) {
       score_points <- ggplot_build(circlebarplot)$data[[1]]$y
       
       circlebarplot <- circlebarplot +
-        ylim(-scale, max(score_points) * 1.2) +
+        ylim(-scale, max(score_points) * 1.25) +
         coord_polar(start = -pi/12) +
         geom_text(aes(x = class,
                       y = -scale/4.1,
@@ -117,15 +180,15 @@ shinyServer(function(input, output, session) {
                   family = "Baskervville",
                   inherit.aes = FALSE) +
         geom_text(aes(x = class,
-                      y = max(score_points) * 1.2,
+                      y = max(score_points) * 1.25,
                       label = round(score,2)),
                   size = 4.25,
                   family = "Baskervville",
                   inherit.aes = FALSE) +
-        labs(title = "Relative Proportion of Pitches Used in this Track") +
+        labs(title = "Pitch Class Scores for this Section") +
         theme_void() +
         theme(plot.title = element_text(hjust = 0.5),
-              text = element_text(size = 12,
+              text = element_text(size = 15,
                                   family = "Baskervville",
                                   color = "#000000"),
               panel.background = element_rect(fill = "#fafafa", 
@@ -135,6 +198,49 @@ shinyServer(function(input, output, session) {
               plot.margin = margin(t = 0, r = 0, b = 0, l = 0)) 
       
       plot(circlebarplot)
+    })
+  })
+  
+  output$timbrebarplot <- renderPlot({
+    
+    if(length(timbre_bar_plot_filter()$class) == 0)
+      return()
+    
+    isolate({
+      
+      timbrebarplot <- timbre_bar_plot_filter() %>% 
+        ggplot(aes(x = class, 
+                   y = score,
+                   fill = class)) +
+        geom_bar(stat = "identity",
+                 color = "black") +
+        scale_fill_manual(values = timbre_color_palette)
+      
+      score_points <- ggplot_build(timbrebarplot)$data[[1]]$y
+      
+      timbrebarplot <- timbrebarplot +
+        geom_text(aes(x = class,
+                      y = if_else(score < 0, score - 6, score + 6),
+                      label = round(score,2)),
+                  size = 4.25,
+                  family = "Baskervville",
+                  inherit.aes = FALSE) +
+        labs(title = "Timbre Scores for this Section",
+             x = "Class",
+             y = "Score") +
+        theme_minimal() +
+        theme(plot.title = element_text(hjust = 0.5),
+              text = element_text(size = 15,
+                                  family = "Baskervville",
+                                  color = "#000000"),
+              panel.background = element_rect(fill = "#fafafa", 
+                                              colour = "#000000"),
+              legend.position = "none",
+              panel.grid = element_blank(),
+              plot.background = element_rect(fill = "#fafafa", color = NA),
+              plot.margin = margin(t = 0, r = 0, b = 0, l = 0)) 
+      
+      plot(timbrebarplot)
     })
   })
   
