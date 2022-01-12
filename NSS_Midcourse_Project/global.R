@@ -1,7 +1,6 @@
 library(shiny)
 library(tidyverse)
 library(shinydashboard)
-library(gganimate)
 library(waiter)
 library(shinyWidgets)
 library(showtext)
@@ -14,6 +13,8 @@ showtext_auto()
 # Load in datasets.
 pitch_timbre <- read_rds("data/tidy_pitch_timbre.rds")
 general_audio_values <- read_rds("data/tidy_descriptive_values.rds")
+logreg_track_tibble <- read_rds("data/logreg_track_tibble.rds")
+logreg_section_tibble <- read_rds("data/logreg_section_tibble.rds")
 
 # Making pitches colored like piano keys.
 pitch_color_vector <- c("white",
@@ -38,9 +39,18 @@ filter_for_group <- function(composer_period_group, sot, cv, cov) {
     filter(composer_period == composer_period_group,
            track_or_section_value == sot,
            descriptive_value_type == cv,
-           confidence_or_value == cov) %>% 
-    mutate(composer_group = composer_period) %>% 
-    select(composer_group, descriptive_value)
+           confidence_or_value == cov)
+  if(sot == "Track") {
+    tbl <- tbl %>% 
+      select(-section_start, -section_duration) %>%
+      unique() %>%
+      mutate(composer_group = composer_period) %>% 
+      select(composer_group, descriptive_value)
+  } else {
+    tbl <- tbl %>% 
+      mutate(composer_group = composer_period) %>% 
+      select(composer_group, descriptive_value)
+  }
   return(tbl)
 }
 
@@ -48,9 +58,18 @@ filter_for_all <- function(sot, cv, cov) {
   tbl <- general_audio_values %>% 
     filter(track_or_section_value == sot,
            descriptive_value_type == cv,
-           confidence_or_value == cov) %>% 
-    mutate(composer_group = "All") %>% 
-    select(composer_group, descriptive_value)
+           confidence_or_value == cov)
+  if(sot == "Track") {
+    tbl <- tbl %>% 
+      select(-section_start, -section_duration) %>%
+      unique() %>%
+      mutate(composer_group = "All") %>% 
+      select(composer_group, descriptive_value)
+  } else {
+    tbl <- tbl %>% 
+      mutate(composer_group = "All") %>% 
+      select(composer_group, descriptive_value)
+  }
   return(tbl)
 }
 

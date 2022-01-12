@@ -70,26 +70,6 @@ shinyUI(
                  selectizeInput("updateSong", 
                                 "Select Song:", 
                                 choices = NULL),
-                 selectInput(
-                   inputId = "first_comparison_group",
-                   label = "Choose Comparison Group:", 
-                   choices = c("Medieval/Renaissance",
-                               "Baroque/Classical",
-                               "Romantic",
-                               "Modern/Post-Modern",
-                               "All"),
-                   selected = "Medieval/Renaissance"
-                 ),
-                 selectInput(
-                   inputId = "second_comparison_group",
-                   label = "Choose Comparison Group:", 
-                   choices = c("Medieval/Renaissance",
-                               "Baroque/Classical",
-                               "Romantic",
-                               "Modern/Post-Modern",
-                               "All"),
-                   selected = "Baroque/Classical"
-                 ),
                  htmlOutput("frame")
                ),
                mainPanel(
@@ -100,7 +80,6 @@ shinyUI(
                                       fluidRow(
                                         column(width = 3,
                                                HTML("<h4><b>Comparison Analysis</b></h4>"),
-                                               br(),
                                                awesomeRadio(
                                                  inputId = "section_or_track",
                                                  label = "Track or Section Basis:", 
@@ -108,7 +87,6 @@ shinyUI(
                                                  selected = "Track",
                                                  inline = TRUE
                                                ),
-                                               br(),
                                                awesomeRadio(
                                                  inputId = "comparison_value",
                                                  label = "Select Value to Compare On:", 
@@ -118,7 +96,6 @@ shinyUI(
                                                              "Time Signature"),
                                                  selected = "Tempo"
                                                ),
-                                               br(),
                                                awesomeRadio(
                                                  inputId = "confidence_or_value",
                                                  label = "Select Confidence or Value:", 
@@ -126,12 +103,33 @@ shinyUI(
                                                  selected = "Confidence",
                                                  inline = TRUE
                                                ),
+                                               selectInput(
+                                                 inputId = "first_comparison_group",
+                                                 label = "Choose First Group:", 
+                                                 choices = c("Medieval/Renaissance",
+                                                             "Baroque/Classical",
+                                                             "Romantic",
+                                                             "Modern/Post-Modern",
+                                                             "All"),
+                                                 selected = "Medieval/Renaissance"
+                                               ),
+                                               selectInput(
+                                                 inputId = "second_comparison_group",
+                                                 label = "Choose Second Group:", 
+                                                 choices = c("Medieval/Renaissance",
+                                                             "Baroque/Classical",
+                                                             "Romantic",
+                                                             "Modern/Post-Modern",
+                                                             "All"),
+                                                 selected = "Baroque/Classical"
+                                               ),
                                                style='border-right:1px solid #d1d1d1; height: 400px;',
                                         ),
                                         column(width = 9,
                                                plotOutput("comparison_density")
                                         )
                                       ),
+                                      br(),
                                       hr(color = "#d1d1d1"),
                                       fluidRow(
                                         HTML("<h4><b>Song Pitch and Timbre Analysis</b></h4>"),
@@ -159,9 +157,50 @@ shinyUI(
                                       icon = icon('chart-line','fa-2x'),
                                       value = "logistic_active",
                                       fluidRow(
-                                        column(width = 6),
-                                        column(width = 6)
+                                        column(width = 3,
+                                               HTML("<h4><b>Regression Analysis</b></h4>"),
+                                               br(),
+                                               awesomeRadio(
+                                                 inputId = "logreg_SOT",
+                                                 label = "Track or Section Basis:", 
+                                                 choices = c("Track", "Section"),
+                                                 selected = "Track",
+                                                 inline = TRUE
+                                               ),
+                                               br(),
+                                               pickerInput(
+                                                 inputId = "logreg_variables",
+                                                 label = "Select Regression Variables:", 
+                                                 choices = c("Loudness Value" = "Loudness_Value",
+                                                             "Tempo Value" = "Tempo_Value",
+                                                             "Tempo Confidence" = "Tempo_Confidence",
+                                                             "Key Value" = "Key_Value",
+                                                             "Key Confidence" = "Key_Confidence",
+                                                             "Mode Value" = "Mode_Value",
+                                                             "Mode Confidence" = "Mode_Confidence",
+                                                             "Time Signature Value" = "Time_Signature_Value",
+                                                             "Time Signature Confidence" = "Time_Signature_Confidence"),
+                                                 options = list(
+                                                   `actions-box` = TRUE), 
+                                                 multiple = TRUE
+                                               ),
+                                               br(),
+                                               awesomeRadio(
+                                                 inputId = "logreg_comparison_group",
+                                                 label = "Choose Regression Group:", 
+                                                 choices = c("Medieval/Renaissance",
+                                                             "Baroque/Classical",
+                                                             "Romantic",
+                                                             "Modern/Post-Modern",
+                                                             "All"),
+                                                 selected = "Baroque/Classical"
+                                               ),
+                                               style = 'border-right:1px solid #d1d1d1; height: 400px;'
+                                        ),
+                                        column(width = 9)
                                       ),
+                                      br(),
+                                      hr(color = "#d1d1d1"),
                                       fluidRow(
                                         column(width = 6),
                                         column(width = 6)
