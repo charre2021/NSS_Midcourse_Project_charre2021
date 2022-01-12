@@ -53,3 +53,23 @@ filter_for_all <- function(sot, cv, cov) {
     select(composer_group, descriptive_value)
   return(tbl)
 }
+
+pitch_classes <- c("C",
+                   "C#/Db",
+                   "D",
+                   "D#/Eb",
+                   "E",
+                   "F",
+                   "F#/Gb",
+                   "G",
+                   "G#/Ab",
+                   "A",
+                   "A#/Bb",
+                   "B")
+
+time_signature_classes <- c("Simple Meter in 3",
+                            "Simple Meter in 2 or 4",
+                            "Odd Meter (3, 2)",
+                            "Compound Meter",
+                            "Odd Meter (3, 2, 2)")
+
