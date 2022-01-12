@@ -31,23 +31,25 @@ pitch_color_vector <- c("white",
 
 timbre_color_palette <- colorRampPalette(c("#080d13", "#12466b", "#d0f7ff"))(12)
 
-pitch_classes <- c("0" = "C",
-                   "1" = "C#/Db",
-                   "2" = "D",
-                   "3" = "D#/Eb",
-                   "4" = "E",
-                   "5" = "F",
-                   "6" = "F#/Gb",
-                   "7" = "G",
-                   "8" = "G#/Ab",
-                   "9" = "A",
-                   "10" = "A#/Bb",
-                   "11" = "B")
+density_color_palette <- c("#080d13", "#12466b", "#d0f7ff")
 
-time_signature_classes <- c("3" = "Simple Meter in 3",
-                            "4" = "Simple Meter in 2 or 4",
-                            "5" = "Odd Meter (3, 2)",
-                            "6" = "Compound Meter",
-                            "7" = "Odd Meter (3, 2, 2)")
+filter_for_group <- function(composer_period_group, sot, cv, cov) {
+  tbl <- general_audio_values %>% 
+    filter(composer_period == composer_period_group,
+           track_or_section_value == sot,
+           descriptive_value_type == cv,
+           confidence_or_value == cov) %>% 
+    mutate(composer_group = composer_period) %>% 
+    select(composer_group, descriptive_value)
+  return(tbl)
+}
 
-
+filter_for_all <- function(sot, cv, cov) {
+  tbl <- general_audio_values %>% 
+    filter(track_or_section_value == sot,
+           descriptive_value_type == cv,
+           confidence_or_value == cov) %>% 
+    mutate(composer_group = "All") %>% 
+    select(composer_group, descriptive_value)
+  return(tbl)
+}

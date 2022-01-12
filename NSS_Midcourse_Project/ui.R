@@ -9,6 +9,14 @@ shinyUI(
     ),
     tabPanel("", 
              icon = icon('book','fa-2x'),
+             autoWaiter(
+               id = c("frame", 
+                      "comparison_density", 
+                      "circlebarplot", 
+                      "timbrebarplot"),
+               html = spin_wave(), 
+               color = '#000029'
+             ),
              fluidRow(
                column(
                  width = 12,
@@ -62,7 +70,7 @@ shinyUI(
                                "Romantic",
                                "Modern/Post-Modern",
                                "All"),
-                   selected = "Medieval/Renaissance"
+                   selected = "Baroque/Classical"
                  ),
                  htmlOutput("frame")
                ),
@@ -73,9 +81,8 @@ shinyUI(
                                       value = "descriptive_active",
                                       fluidRow(
                                         column(width = 3,
-                                               uiOutput("composer")
-                                        ),
-                                        column(width = 3,
+                                               h3("Comparison Analysis"),
+                                               br(),
                                                awesomeRadio(
                                                  inputId = "section_or_track",
                                                  label = "Track or Section Basis:", 
@@ -83,16 +90,17 @@ shinyUI(
                                                  selected = "Track",
                                                  inline = TRUE
                                                ),
+                                               br(),
                                                awesomeRadio(
                                                  inputId = "comparison_value",
                                                  label = "Select Value to Compare On:", 
                                                  choices = c("Tempo", 
                                                              "Loudness",
                                                              "Key",
-                                                             "Timbre",
                                                              "Time Signature"),
                                                  selected = "Tempo"
                                                ),
+                                               br(),
                                                awesomeRadio(
                                                  inputId = "confidence_or_value",
                                                  label = "Select Confidence or Value:", 
@@ -101,9 +109,13 @@ shinyUI(
                                                  inline = TRUE
                                                ),
                                         ),
-                                        column(width = 6,
-                                               plotOutput("comparison_jitter")
+                                        column(width = 9,
+                                               plotOutput("comparison_density")
                                         )
+                                      ),
+                                      fluidRow(
+                                        h3("Song Pitch and Timbre Analysis"),
+                                        br()
                                       ),
                                       fluidRow(
                                         column(width = 6,

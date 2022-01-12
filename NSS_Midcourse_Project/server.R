@@ -48,107 +48,86 @@ shinyServer(function(input, output, session) {
                          choices = section_choices)
   })
   
-  hex_filter <- reactive({
-    
-    composer_tbl <- filtered_by_composer() %>% 
+  comparison_group_levels <- reactive(
+    c(input$composer, 
+      input$first_comparison_group,
+      input$second_comparison_group)
+  )
+  
+  composer_tbl <- reactive({
+    filtered_by_composer() %>%
       filter(track_or_section_value == input$section_or_track,
              descriptive_value_type == input$comparison_value,
-             confidence_or_value == input$confidence_or_value) %>% 
-      mutate(group = composer) %>% 
-      select(group, descriptive_value)
-    
-    filter_for_group <- function(composer_period_group) {
-      tbl <- general_audio_values %>% 
-        filter(composer_period == composer_period_group,
-               track_or_section_value == input$section_or_track,
-               descriptive_value_type == input$comparison_value,
-               confidence_or_value == input$confidence_or_value) %>% 
-        mutate(group = composer_period) %>% 
-        select(group, descriptive_value)
-      return(tbl)
-    }
-    
-    filter_for_all <- function() {
-      tbl <- general_audio_values %>% 
-        filter(track_or_section_value == input$section_or_track,
-               descriptive_value_type == input$comparison_value,
-               confidence_or_value == input$confidence_or_value) %>% 
-        mutate(group = "All") %>% 
-        select(group, descriptive_value)
-      return(tbl)
-    }
-    
-    if(input$first_comparison_group != "All") {
-      first_comparison_group_tbl <- filter_for_group(input$first_comparison_group)
-    } else {
-      first_comparison_group_tbl <- filter_for_all()
-    }
-    
-    if(input$first_comparison_group != "All") {
-      second_comparison_group_tbl <- filter_for_group(input$second_comparison_group)
-    } else {
-      second_comparison_group_tbl <- filter_for_all()
-    }
-    
-    if(input$comparison_value == "Key" & 
-       confidence_or_value == "Value") {
-      final_tbl <- bind_rows(composer_tbl, 
-                             first_comparison_group_tbl, 
-                             second_comparison_group_tbl) %>% 
-        mutate(descriptive_value = as.factor(descriptive_value),
-               descriptive_value = pitch_classes[descriptive_value])
-    } else if(input$comparison_value == "Time Signature" & 
-              confidence_or_value == "Value") {
-      final_tbl <- bind_rows(composer_tbl, 
-                             first_comparison_group_tbl, 
-                             second_comparison_group_tbl) %>% 
-        mutate(descriptive_value = as.factor(descriptive_value),
-               descriptive_value = pitch_classes[descriptive_value])
-    } else {
-      final_tbl <- bind_rows(composer_tbl, 
-                             first_comparison_group_tbl, 
-                             second_comparison_group_tbl)
-    }
-    
-    return(final_tbl)
-    
+             confidence_or_value == input$confidence_or_value) %>%
+      mutate(composer_group = composer) %>%
+      select(composer_group, descriptive_value)
   })
   
-  output$composer <- renderUI({
-    imgURL <- filtered_by_composer() %>%
-      select(composer_image) %>%
-      unique()
-    
-    tags$img(src = imgURL,
-             height = 250,
-             width = 235)
+  
+  first_comparison_group_tbl <- reactive({
+    if (!(input$first_comparison_group %in% "All")) {
+      filter_for_group(input$first_comparison_group,
+                       input$section_or_track,
+                       input$comparison_value,
+                       input$confidence_or_value)
+    } else {
+      filter_for_all(input$section_or_track,
+                     input$comparison_value,
+                     input$confidence_or_value)
+    }
   })
   
-  output$histogram <- renderPlot({
-    histogram_plot <- ggplot(histogram_filter(), aes(x = descriptive_value)) +
-      geom_histogram(aes(fill = ..count..),
-                     bins = 30,
-                     breaks = seq(0,1,0.1),
-                     color = "black")
+  second_comparison_group_tbl <- reactive({
+    if(!(input$second_comparison_group %in% "All")) {
+      filter_for_group(input$second_comparison_group,
+                       input$section_or_track,
+                       input$comparison_value,
+                       input$confidence_or_value)
+    } else {
+      filter_for_all(input$section_or_track,
+                     input$comparison_value,
+                     input$confidence_or_value)
+    }
+  })
+  
+  density_filter <- reactive({
+    bind_rows(composer_tbl(),
+              first_comparison_group_tbl(),
+              second_comparison_group_tbl()) %>% 
+      mutate(composer_group = factor(composer_group, 
+                                     levels = comparison_group_levels()))
+  })
+  
+  output$comparison_density <- renderPlot({
+    density_plot <- density_filter() %>% 
+      ggplot(aes(x = descriptive_value, fill = composer_group)) + 
+      geom_density(alpha = 0.5)
     
-    histogram_plot <- histogram_plot +
-      scale_x_continuous(expand = c(0.01,0.01)) +
-      scale_y_continuous(expand = c(0,0),
-                         limits = c(0, max(ggplot_build(histogram_plot)$data[[1]]$count)*1.1)) +
-      labs(title = "Distribution of Composer Value Confidence",
-           x = "Confidence Value",
-           y = "Count on Track or Section Basis") +
+    density_plot <- density_plot +
+      scale_y_continuous(expand = expansion(mult = c(0,0.1))) +
+      scale_x_continuous(expand = expansion(mult = c(0,0))) + 
+      labs(title = "Group Comparison of Descriptive Values",
+           x = "Descriptive Value",
+           y = "Density") + 
+      scale_fill_manual(name = "Comparison Groups", 
+                        values = density_color_palette) +
+      theme_minimal() +
       theme(plot.title = element_text(hjust = 0.5),
-            text = element_text(size = 12,
+            text = element_text(size = 15,
                                 family = "Baskervville",
                                 color = "#000000"),
-            panel.background = element_rect(fill = "#fafafa", colour = "#000000"),
-            panel.grid = element_blank(), 
+            panel.background = element_rect(fill = "#fafafa", 
+                                            colour = "#000000"),
+            panel.grid = element_blank(),
             plot.background = element_rect(fill = "#fafafa", color = NA),
-            legend.position = "none",
-            plot.margin = margin(t = 2, r = 2, b = 2, l = 2))
+            plot.margin = margin(t = 0, r = 10, b = 0, l = 0),
+            legend.position = c(0.04, .985),
+            legend.justification = c("left", "top"),
+            legend.box.just = "left",
+            legend.margin = margin(t = 0, r = 0, b = 0, l = 0)) 
     
-    print(histogram_plot)
+    plot(density_plot)
+    
   })
   
   output$circlebarplot <- renderPlot({
@@ -269,6 +248,6 @@ shinyServer(function(input, output, session) {
     my_test <- tags$iframe(src = new_song(), 
                            width = "100%", 
                            height = 380,
-                           autoplay = "allow")
+                           allow = "encrypted-media")
   })
 })
