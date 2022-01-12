@@ -67,9 +67,16 @@ pitch_classes <- c("C",
                    "A#/Bb",
                    "B")
 
-time_signature_classes <- c("Simple Meter in 3",
+time_signature_classes <- c("Unknown Meter",
+                            "Simple Meter in 3",
                             "Simple Meter in 2 or 4",
                             "Odd Meter (3, 2)",
                             "Compound Meter",
                             "Odd Meter (3, 2, 2)")
+
+mean_mode <- function(whole_column) {
+  unique_column <- unique(whole_column)
+  all_modes <- (tabulate(match(whole_column,unique_column)))
+  return(mean(unique_column[all_modes == max(all_modes)]))
+}
 

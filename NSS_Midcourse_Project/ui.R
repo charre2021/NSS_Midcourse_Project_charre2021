@@ -25,15 +25,33 @@ shinyUI(
                    width = 12,
                    id = "textbox",
                    h2("About"),
-                   # Replace with real text once finalized.
-                   p("Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-                   sed do eiusmod tempor incididunt ut labore et dolore magna
-                   aliqua. Ut enim ad minim veniam, quis nostrud exercitation
-                   ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                   Duis aute irure dolor in reprehenderit in voluptate velit
-                   esse cillum dolore eu fugiat nulla pariatur. Excepteur
-                   sint occaecat cupidatat non proident, sunt in culpa qui
-                   officia deserunt mollit anim id est laborum.")
+                   p("It's no surprise that data is powerful. 
+                     Data can reinforce our common sense or knowledge 
+                     about the world, or it can completely uproot our 
+                     understanding of it."),
+                   br(),
+                   p("For this RShiny App, I have used data to analyze one of my
+                     domain knowledges and great loves-classical music. 
+                     In music history classes, I was taught that western 
+                     classical music was a story of progression, 
+                     then deconstruction, and then reconstruction. 
+                     But how true is that analysis? What does the data show? 
+                     And can we reveal--through objective variables in 
+                     data--this musical path? Or does the data challenge our 
+                     assumptions about how we believe our ears are hearing 
+                     the differences between pieces?"),
+                   br(),
+                   p("Using the Spotify Web API, I analyzed objective variables 
+                     from roughly 2,066 pieces by 36 different classical composers 
+                     from 1098 CE to today to understand and answer these questions. 
+                     These variables include key, tempo, volume, time signature, 
+                     pitch and timbre, as well as confidences related to these 
+                     variables. I sought with this RShiny App to replicate a 
+                     specific problem in musicology and music theory: Can we 
+                     determine what period a piece is from or which composer 
+                     composed it based on just listening to the music?"),
+                   br(),
+                   p("What follows are the results of that analysis.")
                  )
                )
              )
@@ -54,7 +72,7 @@ shinyUI(
                                 choices = NULL),
                  selectInput(
                    inputId = "first_comparison_group",
-                   label = "Choose Comparison Group", 
+                   label = "Choose Comparison Group:", 
                    choices = c("Medieval/Renaissance",
                                "Baroque/Classical",
                                "Romantic",
@@ -64,7 +82,7 @@ shinyUI(
                  ),
                  selectInput(
                    inputId = "second_comparison_group",
-                   label = "Choose Comparison Group", 
+                   label = "Choose Comparison Group:", 
                    choices = c("Medieval/Renaissance",
                                "Baroque/Classical",
                                "Romantic",
@@ -81,7 +99,7 @@ shinyUI(
                                       value = "descriptive_active",
                                       fluidRow(
                                         column(width = 3,
-                                               h3("Comparison Analysis"),
+                                               HTML("<h4><b>Comparison Analysis</b></h4>"),
                                                br(),
                                                awesomeRadio(
                                                  inputId = "section_or_track",
@@ -108,16 +126,16 @@ shinyUI(
                                                  selected = "Confidence",
                                                  inline = TRUE
                                                ),
+                                               style='border-right:1px solid #d1d1d1; height: 400px;',
                                         ),
                                         column(width = 9,
                                                plotOutput("comparison_density")
                                         )
                                       ),
+                                      hr(color = "#d1d1d1"),
                                       fluidRow(
-                                        h3("Song Pitch and Timbre Analysis"),
-                                        br()
-                                      ),
-                                      fluidRow(
+                                        HTML("<h4><b>Song Pitch and Timbre Analysis</b></h4>"),
+                                        br(),
                                         column(width = 6,
                                                awesomeRadio(
                                                  inputId = "mean_or_median",
@@ -126,7 +144,8 @@ shinyUI(
                                                  selected = "Mean",
                                                  inline = TRUE
                                                ),
-                                               plotOutput("circlebarplot")
+                                               plotOutput("circlebarplot"),
+                                               style='border-right:1px solid #d1d1d1; height: 400px;',
                                         ),
                                         column(width = 6,
                                                selectizeInput("section_start",

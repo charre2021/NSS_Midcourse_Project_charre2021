@@ -99,6 +99,14 @@ shinyServer(function(input, output, session) {
   })
   
   output$comparison_density <- renderPlot({
+    if (("Loudness" %in% input$comparison_value) &
+        ("Confidence" %in% input$confidence_or_value) |
+        (input$first_comparison_group == input$second_comparison_group)) {
+      return()
+    }
+    
+    
+    
     density_plot <- density_filter() %>% 
       ggplot(aes(x = descriptive_value, fill = composer_group)) + 
       geom_density(alpha = 0.5)
@@ -132,18 +140,22 @@ shinyServer(function(input, output, session) {
     } else if (("Time Signature" %in% input$comparison_value) &
                ("Value" %in% input$confidence_or_value)) {
       density_plot <- density_plot +
-        scale_x_continuous(breaks = c(3:7),
+        scale_x_continuous(breaks = c(1,3:7),
                            labels = time_signature_classes,
                            expand = expansion(mult = c(0,0)),
-                           limits = c(2.5,7.5)) + 
+                           limits = c(0.5,7.5)) + 
         theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
     } else {
       density_plot <- density_plot +
         scale_x_continuous(expand = expansion(mult = c(0,0)))
     }
     
-    # Need to correct legend positioning.
-    if(mode(density_filter()$descriptive_value) < range(density_filter()$descriptive_value)/2) {
+    dv_mean_mode <- mean_mode(density_filter()$descriptive_value)
+    range_max <- max(density_filter()$descriptive_value)
+    range_min <- min(density_filter()$descriptive_value)
+    range_third <- (range_max - range_min)/3
+    
+    if(dv_mean_mode < range_third) {
       
       density_plot <- density_plot +
         theme(legend.position = c(0.985, .985),

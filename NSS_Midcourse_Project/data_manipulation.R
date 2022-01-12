@@ -166,7 +166,6 @@ write_rds(tidy_descriptive_values, "data/tidy_descriptive_values.rds")
 
 # Pivot based on mean/median pitch/timbre values.
 tidy_pitch_timbre <- all_audio_analysis %>% 
-  
   rename_with(.fn = rename_timbre, .cols = c(starts_with("mean_timbre"),
                                              starts_with("median_timbre"))) %>% 
   pivot_longer(cols = c(starts_with("mean"),
@@ -200,9 +199,4 @@ tidy_pitch_timbre <- all_audio_analysis %>%
   .[,tpt_col_order]
 
 write_rds(tidy_pitch_timbre, "data/tidy_pitch_timbre.rds")
-
-composer_vec <- tidy_descriptive_values %>% 
-  select(composer) %>% 
-  unique()
-
 
