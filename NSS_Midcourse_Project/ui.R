@@ -13,7 +13,8 @@ shinyUI(
                id = c("frame", 
                       "comparison_density", 
                       "circlebarplot", 
-                      "timbrebarplot"),
+                      "timbrebarplot",
+                      "logreg_table"),
                html = spin_wave(), 
                color = '#000029'
              ),
@@ -180,8 +181,7 @@ shinyUI(
                                                              "Mode Confidence" = "Mode_Confidence",
                                                              "Time Signature Value" = "Time_Signature_Value",
                                                              "Time Signature Confidence" = "Time_Signature_Confidence"),
-                                                 options = list(
-                                                   `actions-box` = TRUE), 
+                                                 options = list(`actions-box` = TRUE), 
                                                  multiple = TRUE
                                                ),
                                                br(),
@@ -197,12 +197,16 @@ shinyUI(
                                                ),
                                                style = 'border-right:1px solid #d1d1d1; height: 400px;'
                                         ),
-                                        column(width = 9)
+                                        column(width = 9,
+                                               DTOutput('logreg_table')
+                                        ),
                                       ),
                                       br(),
                                       hr(color = "#d1d1d1"),
                                       fluidRow(
-                                        column(width = 6),
+                                        column(width = 6,
+                                               style ='border-right:1px solid #d1d1d1; height: 400px;'
+                                        ),
                                         column(width = 6)
                                       )
                              )

@@ -108,6 +108,94 @@ shinyServer(function(input, output, session) {
                                      levels = comparison_group_levels()))
   })
   
+  split_tibble <- reactive({
+    if(input$logreg_SOT == "Track") {
+      initial_split_tibble <- logreg_track_tibble %>% 
+        mutate(log_value = factor(if_else(composer == input$composer,
+                                          TRUE,
+                                          FALSE),levels = c(TRUE,FALSE)))
+      if(input$logreg_comparison_group != "All") {
+        initial_split_tibble <- initial_split_tibble %>% 
+          filter(composer == input$composer | 
+                   composer_period == input$logreg_comparison_group)
+      }
+      
+    } else {
+      initial_split_tibble <- logreg_section_tibble %>% 
+        mutate(log_value = factor(if_else(composer == input$composer,
+                                          TRUE,
+                                          FALSE), 
+                                  levels = c(TRUE, FALSE)))
+      if(input$logreg_comparison_group != "All") {
+        initial_split_tibble <- initial_split_tibble %>% 
+          filter(composer == input$composer | 
+                   composer_period == input$logreg_comparison_group)
+      }
+    }
+    
+    initial_split_tibble <- initial_split_tibble %>%
+      select(log_value, c(input$logreg_variables)) %>% 
+      initial_split()
+    
+    return(initial_split_tibble)
+    
+  })
+  
+  testing_set <- reactive({
+    split_tibble() %>% 
+      testing()
+  })
+  
+  training_set <- reactive({
+    split_tibble() %>% 
+      training()
+  })
+  
+  logreg_model <- reactive({
+    logistic_reg() %>% 
+      set_engine("glm") %>% 
+      set_mode("classification") %>% 
+      fit(log_value~.,data = training_set())
+  })
+  
+  output$logreg_table <- renderDT({
+    model_tbl <- tidy(logreg_model(), exponentiate = TRUE) %>% 
+      mutate(term = sapply(term, 
+                           function(x) str_replace_all(x, 
+                                                       pattern = "_", 
+                                                       replacement = " "))) %>% 
+      mutate_if(is.numeric, ~round(.,2)) %>% 
+      rename("Term" = "term",
+             "Estimate" = "estimate",
+             "Standard Error" = "std.error",
+             "Statistic" = "statistic",
+             "P-Value" = "p.value")
+    
+    color_by_pvalue <- formatter("span", 
+                                 style = ~ style(color = ifelse(`P-Value` <= 0.05, 
+                                                                "green", 
+                                                                "red")))
+    
+    model_tbl <- as.datatable(formattable(
+      model_tbl,
+      list(
+        `Estimate` = color_bar("lightblue"),
+        `Term` = color_by_pvalue,
+        `P-Value` = color_by_pvalue
+      )
+    ),
+    caption = tags$caption(HTML("<h4><b>Logistic Regression Results</b></h4>"),
+                           style = "color: black; text-align: Center;"),
+    rownames = FALSE,
+    options = list(dom = 't',
+                   columnDefs = list(list(className = 'dt-right', 
+                                          targets = 0:4)))
+    )
+    
+    return(model_tbl)
+  })
+  
+  
   output$comparison_density <- renderPlot({
     if (("Loudness" %in% input$comparison_value) &
         ("Confidence" %in% input$confidence_or_value) |

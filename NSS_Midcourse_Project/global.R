@@ -4,6 +4,9 @@ library(shinydashboard)
 library(waiter)
 library(shinyWidgets)
 library(showtext)
+library(tidymodels)
+library(DT)
+library(formattable)
 
 if(!any(grepl("Baskervville", font_families(), ignore.case = TRUE))){
   font_add_google("Baskervville", "Baskervville")
