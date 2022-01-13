@@ -14,7 +14,9 @@ shinyUI(
                       "comparison_density", 
                       "circlebarplot", 
                       "timbrebarplot",
-                      "logreg_table"),
+                      "logreg_table",
+                      "confusion_matrix",
+                      "show_curve"),
                html = spin_wave(), 
                color = '#000029'
              ),
@@ -162,6 +164,16 @@ shinyUI(
                                                HTML("<h4><b>Regression Analysis</b></h4>"),
                                                br(),
                                                awesomeRadio(
+                                                 inputId = "logreg_comparison_group",
+                                                 label = "Choose Regression Group:", 
+                                                 choices = c("Medieval/Renaissance",
+                                                             "Baroque/Classical",
+                                                             "Romantic",
+                                                             "Modern/Post-Modern"),
+                                                 selected = "Romantic"
+                                               ),
+                                               br(),
+                                               awesomeRadio(
                                                  inputId = "logreg_SOT",
                                                  label = "Track or Section Basis:", 
                                                  choices = c("Track", "Section"),
@@ -172,28 +184,18 @@ shinyUI(
                                                pickerInput(
                                                  inputId = "logreg_variables",
                                                  label = "Select Regression Variables:", 
-                                                 choices = c("Loudness Value" = "Loudness_Value",
-                                                             "Tempo Value" = "Tempo_Value",
-                                                             "Tempo Confidence" = "Tempo_Confidence",
-                                                             "Key Value" = "Key_Value",
-                                                             "Key Confidence" = "Key_Confidence",
-                                                             "Mode Value" = "Mode_Value",
-                                                             "Mode Confidence" = "Mode_Confidence",
-                                                             "Time Signature Value" = "Time_Signature_Value",
-                                                             "Time Signature Confidence" = "Time_Signature_Confidence"),
+                                                 choices = regression_picker_choices,
+                                                 selected = regression_picker_choices,
                                                  options = list(`actions-box` = TRUE), 
                                                  multiple = TRUE
                                                ),
                                                br(),
                                                awesomeRadio(
-                                                 inputId = "logreg_comparison_group",
-                                                 label = "Choose Regression Group:", 
-                                                 choices = c("Medieval/Renaissance",
-                                                             "Baroque/Classical",
-                                                             "Romantic",
-                                                             "Modern/Post-Modern",
-                                                             "All"),
-                                                 selected = "Baroque/Classical"
+                                                 inputId = "gain_or_calibration",
+                                                 label = "Calibration or Gain Curve:", 
+                                                 choices = c("Calibration", "Gain"),
+                                                 selected = "Calibration",
+                                                 inline = TRUE
                                                ),
                                                style = 'border-right:1px solid #d1d1d1; height: 400px;'
                                         ),
@@ -205,9 +207,11 @@ shinyUI(
                                       hr(color = "#d1d1d1"),
                                       fluidRow(
                                         column(width = 6,
+                                               plotOutput("confusion_matrix"),
                                                style ='border-right:1px solid #d1d1d1; height: 400px;'
                                         ),
-                                        column(width = 6)
+                                        column(width = 6,
+                                               plotOutput("show_curve"))
                                       )
                              )
                  )

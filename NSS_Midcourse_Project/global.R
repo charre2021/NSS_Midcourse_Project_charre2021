@@ -6,7 +6,7 @@ library(shinyWidgets)
 library(showtext)
 library(tidymodels)
 library(DT)
-library(formattable)
+library(caret)
 
 if(!any(grepl("Baskervville", font_families(), ignore.case = TRUE))){
   font_add_google("Baskervville", "Baskervville")
@@ -102,3 +102,12 @@ mean_mode <- function(whole_column) {
   return(mean(unique_column[all_modes == max(all_modes)]))
 }
 
+regression_picker_choices <- c("Loudness Value" = "Loudness_Value",
+                               "Tempo Value" = "Tempo_Value",
+                               "Tempo Confidence" = "Tempo_Confidence",
+                               "Key Value" = "Key_Value",
+                               "Key Confidence" = "Key_Confidence",
+                               "Mode Value" = "Mode_Value",
+                               "Mode Confidence" = "Mode_Confidence",
+                               "Time Signature Value" = "Time_Signature_Value",
+                               "Time Signature Confidence" = "Time_Signature_Confidence")

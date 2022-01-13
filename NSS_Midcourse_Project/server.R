@@ -111,26 +111,15 @@ shinyServer(function(input, output, session) {
   split_tibble <- reactive({
     if(input$logreg_SOT == "Track") {
       initial_split_tibble <- logreg_track_tibble %>% 
-        mutate(log_value = factor(if_else(composer == input$composer,
+        mutate(log_value = factor(if_else(composer_period == input$logreg_comparison_group,
                                           TRUE,
                                           FALSE),levels = c(TRUE,FALSE)))
-      if(input$logreg_comparison_group != "All") {
-        initial_split_tibble <- initial_split_tibble %>% 
-          filter(composer == input$composer | 
-                   composer_period == input$logreg_comparison_group)
-      }
-      
     } else {
       initial_split_tibble <- logreg_section_tibble %>% 
-        mutate(log_value = factor(if_else(composer == input$composer,
+        mutate(log_value = factor(if_else(composer_period == input$logreg_comparison_group,
                                           TRUE,
                                           FALSE), 
                                   levels = c(TRUE, FALSE)))
-      if(input$logreg_comparison_group != "All") {
-        initial_split_tibble <- initial_split_tibble %>% 
-          filter(composer == input$composer | 
-                   composer_period == input$logreg_comparison_group)
-      }
     }
     
     initial_split_tibble <- initial_split_tibble %>%
@@ -158,41 +147,137 @@ shinyServer(function(input, output, session) {
       fit(log_value~.,data = training_set())
   })
   
-  output$logreg_table <- renderDT({
-    model_tbl <- tidy(logreg_model(), exponentiate = TRUE) %>% 
-      mutate(term = sapply(term, 
-                           function(x) str_replace_all(x, 
-                                                       pattern = "_", 
-                                                       replacement = " "))) %>% 
-      mutate_if(is.numeric, ~round(.,2)) %>% 
-      rename("Term" = "term",
-             "Estimate" = "estimate",
-             "Standard Error" = "std.error",
-             "Statistic" = "statistic",
-             "P-Value" = "p.value")
+  logreg_results <- reactive({
+    logreg_results <- testing_set() %>% 
+      select(log_value) %>% 
+      bind_cols(predict(logreg_model(),
+                        new_data = testing_set(),
+                        type = "class"))
     
-    color_by_pvalue <- formatter("span", 
-                                 style = ~ style(color = ifelse(`P-Value` <= 0.05, 
-                                                                "green", 
-                                                                "red")))
+    logreg_results <- confusionMatrix(logreg_results$log_value, 
+                                      logreg_results$.pred_class)$table %>%
+      as_tibble() %>% 
+      mutate(Match = if_else(Reference == Prediction, TRUE, FALSE)) %>% 
+      rename("Frequency" = "n") %>% 
+      group_by(Reference)
     
-    model_tbl <- as.datatable(formattable(
-      model_tbl,
-      list(
-        `Estimate` = color_bar("lightblue"),
-        `Term` = color_by_pvalue,
-        `P-Value` = color_by_pvalue
-      )
-    ),
+    return(logreg_results)
+  })
+  
+  logreg_probabilities <- reactive({
+    testing_set() %>% 
+      select(log_value) %>% 
+      bind_cols(predict(logreg_model(),
+                        new_data = testing_set(),
+                        type = "prob"))
+  })
+  
+  
+  logreg_calibration <- reactive({
+    calibration(log_value ~ .pred_TRUE,
+                data = logreg_probabilities(),
+                cuts = 10)
+  })
+  
+  gc_plot_data <- reactive({
+    gain_curve(logreg_probabilities(),
+               truth = log_value,
+               estimate = .pred_TRUE)
+  })
+  
+  output$show_curve <- renderPlot({
+    
+    if(input$gain_or_calibration == "Calibration") {
+      calibration_curve <- ggplot(logreg_calibration()) + 
+        labs(title = "Calibration Curve for Regression Model") + 
+        scale_y_continuous(limits = c(0,100)) +
+        scale_x_continuous(limits = c(0,100)) + 
+        theme_minimal() +
+        theme(plot.title = element_text(hjust = 0.5),
+              text = element_text(size = 15,
+                                  family = "Baskervville",
+                                  color = "#000000"),
+              panel.background = element_rect(fill = "#fafafa",
+                                              colour = "#000000"),
+              panel.grid = element_blank(),
+              plot.background = element_rect(fill = "#fafafa", color = NA),
+              plot.margin = margin(t = 5, r = 5, b = 0, l = 0))
+      
+      plot(calibration_curve)
+    } else {
+      gc_plot <- ggplot(gc_plot_data(), aes(.percent_tested, .percent_found)) + 
+        geom_line(color = "#000029") + 
+        geom_abline(intercept = 0, slope = 1) + 
+        scale_x_continuous(limits = c(-1,100),
+                           expand = c(0,0)) +
+        scale_y_continuous(limits = c(-1,105),
+                           expand = c(0,0)) + 
+        labs(y = "% Found",
+             x = "% Tested",
+             title = "Gain Curve for Regression Model") + 
+        theme_minimal() +
+        theme(plot.title = element_text(hjust = 0.5),
+              text = element_text(size = 15,
+                                  family = "Baskervville",
+                                  color = "#000000"),
+              panel.background = element_rect(fill = "#fafafa",
+                                              colour = "#000000"),
+              panel.grid = element_blank(),
+              plot.background = element_rect(fill = "#fafafa", color = NA),
+              plot.margin = margin(t = 5, r = 5, b = 0, l = 0))
+      
+      plot(gc_plot)
+    }
+  })
+  
+  output$logreg_table <- renderDT(
     caption = tags$caption(HTML("<h4><b>Logistic Regression Results</b></h4>"),
                            style = "color: black; text-align: Center;"),
     rownames = FALSE,
     options = list(dom = 't',
                    columnDefs = list(list(className = 'dt-right', 
-                                          targets = 0:4)))
-    )
-    
-    return(model_tbl)
+                                          targets = 0:4))),
+    {
+      tidy(logreg_model(), exponentiate = TRUE) %>% 
+        mutate(term = sapply(term, 
+                             function(x) str_replace_all(x, 
+                                                         pattern = "_", 
+                                                         replacement = " "))) %>% 
+        mutate_if(is.numeric, ~round(.,2)) %>% 
+        rename("Term" = "term",
+               "Estimate" = "estimate",
+               "Standard Error" = "std.error",
+               "Statistic" = "statistic",
+               "P-Value" = "p.value")
+    })
+  
+  output$confusion_matrix <- renderPlot({
+    ggplot(logreg_results(), 
+           aes(x = factor(Reference, levels = c("TRUE", "FALSE")), 
+               y = Prediction, 
+               fill = Match, 
+               alpha = Frequency)) +
+      geom_tile() +
+      scale_fill_manual(values = c('#87ebff','#ff8787')) + 
+      geom_text(aes(x = Reference,
+                    y = Prediction,
+                    label = Frequency),
+                size = 5,
+                family = "Baskervville",
+                inherit.aes = FALSE) +
+      labs(title = "Confusion Matrix for Regression Model",
+           x = "Actual") + 
+      theme_minimal() +
+      theme(plot.title = element_text(hjust = 0.5),
+            text = element_text(size = 15,
+                                family = "Baskervville",
+                                color = "#000000"),
+            panel.background = element_rect(fill = "#fafafa",
+                                            colour = "#000000"),
+            legend.position = "none",
+            panel.grid = element_blank(),
+            plot.background = element_rect(fill = "#fafafa", color = NA),
+            plot.margin = margin(t = 0, r = 0, b = 0, l = 0))
   })
   
   
