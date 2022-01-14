@@ -173,29 +173,22 @@ shinyUI(
                                                  selected = "Romantic"
                                                ),
                                                br(),
-                                               awesomeRadio(
-                                                 inputId = "logreg_SOT",
-                                                 label = "Track or Section Basis:", 
-                                                 choices = c("Track", "Section"),
-                                                 selected = "Track",
-                                                 inline = TRUE
-                                               ),
-                                               br(),
                                                pickerInput(
                                                  inputId = "logreg_variables",
                                                  label = "Select Regression Variables:", 
-                                                 choices = regression_picker_choices,
-                                                 selected = regression_picker_choices,
+                                                 choices = pt_picker_choices,
+                                                 selected = NULL,
                                                  options = list(`actions-box` = TRUE), 
                                                  multiple = TRUE
                                                ),
                                                br(),
                                                awesomeRadio(
-                                                 inputId = "gain_or_calibration",
+                                                 inputId = "curve_type",
                                                  label = "Calibration or Gain Curve:", 
-                                                 choices = c("Calibration", "Gain"),
-                                                 selected = "Calibration",
-                                                 inline = TRUE
+                                                 choices = c("Calibration",
+                                                             "Gain",
+                                                             "ROC"),
+                                                 selected = "Calibration"
                                                ),
                                                style = 'border-right:1px solid #d1d1d1; height: 400px;'
                                         ),

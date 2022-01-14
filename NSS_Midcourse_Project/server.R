@@ -109,25 +109,15 @@ shinyServer(function(input, output, session) {
   })
   
   split_tibble <- reactive({
-    if(input$logreg_SOT == "Track") {
-      initial_split_tibble <- logreg_track_tibble %>% 
-        mutate(log_value = factor(if_else(composer_period == input$logreg_comparison_group,
-                                          TRUE,
-                                          FALSE),levels = c(TRUE,FALSE)))
-    } else {
-      initial_split_tibble <- logreg_section_tibble %>% 
-        mutate(log_value = factor(if_else(composer_period == input$logreg_comparison_group,
-                                          TRUE,
-                                          FALSE), 
-                                  levels = c(TRUE, FALSE)))
-    }
-    
-    initial_split_tibble <- initial_split_tibble %>%
+    initial_split_tibble <- logreg_pt_tibble %>% 
+      mutate(log_value = factor(if_else(composer_period == input$logreg_comparison_group,
+                                        TRUE,
+                                        FALSE), 
+                                levels = c(TRUE, FALSE))) %>%
       select(log_value, c(input$logreg_variables)) %>% 
       initial_split()
     
     return(initial_split_tibble)
-    
   })
   
   testing_set <- reactive({
@@ -154,8 +144,8 @@ shinyServer(function(input, output, session) {
                         new_data = testing_set(),
                         type = "class"))
     
-    logreg_results <- confusionMatrix(logreg_results$log_value, 
-                                      logreg_results$.pred_class)$table %>%
+    logreg_results <- confusionMatrix(logreg_results$.pred_class,
+                                      logreg_results$log_value)$table %>%
       as_tibble() %>% 
       mutate(Match = if_else(Reference == Prediction, TRUE, FALSE)) %>% 
       rename("Frequency" = "n") %>% 
@@ -185,9 +175,15 @@ shinyServer(function(input, output, session) {
                estimate = .pred_TRUE)
   })
   
+  roc_curve_data <- reactive({
+    roc_curve(logreg_probabilities(),
+              truth = log_value,
+              estimate = .pred_TRUE)
+  })
+  
   output$show_curve <- renderPlot({
     
-    if(input$gain_or_calibration == "Calibration") {
+    if(input$curve_type == "Calibration") {
       calibration_curve <- ggplot(logreg_calibration()) + 
         labs(title = "Calibration Curve for Regression Model") + 
         scale_y_continuous(limits = c(0,100)) +
@@ -201,13 +197,14 @@ shinyServer(function(input, output, session) {
                                               colour = "#000000"),
               panel.grid = element_blank(),
               plot.background = element_rect(fill = "#fafafa", color = NA),
-              plot.margin = margin(t = 5, r = 5, b = 0, l = 0))
+              plot.margin = margin(t = 10, r = 10, b = 0, l = 0))
       
       plot(calibration_curve)
-    } else {
+      
+    } else if(input$curve_type == "Gain") {
       gc_plot <- ggplot(gc_plot_data(), aes(.percent_tested, .percent_found)) + 
         geom_line(color = "#000029") + 
-        geom_abline(intercept = 0, slope = 1) + 
+        geom_abline(intercept = 0, slope = 1, linetype = "dashed") + 
         scale_x_continuous(limits = c(-1,100),
                            expand = c(0,0)) +
         scale_y_continuous(limits = c(-1,105),
@@ -224,9 +221,29 @@ shinyServer(function(input, output, session) {
                                               colour = "#000000"),
               panel.grid = element_blank(),
               plot.background = element_rect(fill = "#fafafa", color = NA),
-              plot.margin = margin(t = 5, r = 5, b = 0, l = 0))
+              plot.margin = margin(t = 10, r = 10, b = 0, l = 0))
       
       plot(gc_plot)
+      
+    } else {
+      ggplot(roc_curve_data(), aes(x = 1 - specificity, y = sensitivity)) +
+        geom_line(color = "#000029") + 
+        geom_abline(intercept = 0, slope = 1, linetype = "dashed") +
+        scale_x_continuous(expand = c(0,0)) +
+        scale_y_continuous(expand = c(0,0)) + 
+        labs(y = "Sensitivity",
+             x = "Specificity",
+             title = "ROC Curve for Regression Model") + 
+        theme_minimal() +
+        theme(plot.title = element_text(hjust = 0.5),
+              text = element_text(size = 15,
+                                  family = "Baskervville",
+                                  color = "#000000"),
+              panel.background = element_rect(fill = "#fafafa",
+                                              colour = "#000000"),
+              panel.grid = element_blank(),
+              plot.background = element_rect(fill = "#fafafa", color = NA),
+              plot.margin = margin(t = 10, r = 10, b = 0, l = 0))
     }
   })
   
@@ -234,15 +251,12 @@ shinyServer(function(input, output, session) {
     caption = tags$caption(HTML("<h4><b>Logistic Regression Results</b></h4>"),
                            style = "color: black; text-align: Center;"),
     rownames = FALSE,
-    options = list(dom = 't',
-                   columnDefs = list(list(className = 'dt-right', 
+    options = list(columnDefs = list(list(className = 'dt-right', 
                                           targets = 0:4))),
     {
       tidy(logreg_model(), exponentiate = TRUE) %>% 
         mutate(term = sapply(term, 
-                             function(x) str_replace_all(x, 
-                                                         pattern = "_", 
-                                                         replacement = " "))) %>% 
+                             function(x) str_replace_all(x,c("_"=" ","`" = "")))) %>% 
         mutate_if(is.numeric, ~round(.,2)) %>% 
         rename("Term" = "term",
                "Estimate" = "estimate",
@@ -378,7 +392,7 @@ shinyServer(function(input, output, session) {
         ylim(-scale * 1.05, max(score_points) * 1.25) +
         coord_polar(start = -pi/12) +
         geom_text(aes(x = class,
-                      y = -scale/4,
+                      y = -scale/3.5,
                       label = class),
                   size = 4.25,
                   family = "Baskervville",
@@ -472,7 +486,6 @@ shinyServer(function(input, output, session) {
   output$frame <- renderUI({
     my_test <- tags$iframe(src = new_song(), 
                            width = "100%", 
-                           height = 380,
-                           allow = "encrypted-media")
+                           height = "380")
   })
 })

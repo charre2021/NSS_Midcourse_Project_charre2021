@@ -13,13 +13,10 @@ if(!any(grepl("Baskervville", font_families(), ignore.case = TRUE))){
 }
 showtext_auto()
 
-# Load in datasets.
 pitch_timbre <- read_rds("data/tidy_pitch_timbre.rds")
 general_audio_values <- read_rds("data/tidy_descriptive_values.rds")
-logreg_track_tibble <- read_rds("data/logreg_track_tibble.rds")
-logreg_section_tibble <- read_rds("data/logreg_section_tibble.rds")
+logreg_pt_tibble <- read_rds("data/logreg_pt_tibble.rds")
 
-# Making pitches colored like piano keys.
 pitch_color_vector <- c("white",
                         "black",
                         "white",
@@ -102,12 +99,6 @@ mean_mode <- function(whole_column) {
   return(mean(unique_column[all_modes == max(all_modes)]))
 }
 
-regression_picker_choices <- c("Loudness Value" = "Loudness_Value",
-                               "Tempo Value" = "Tempo_Value",
-                               "Tempo Confidence" = "Tempo_Confidence",
-                               "Key Value" = "Key_Value",
-                               "Key Confidence" = "Key_Confidence",
-                               "Mode Value" = "Mode_Value",
-                               "Mode Confidence" = "Mode_Confidence",
-                               "Time Signature Value" = "Time_Signature_Value",
-                               "Time Signature Confidence" = "Time_Signature_Confidence")
+pt_picker_choices <- names(logreg_pt_tibble)[8:length(names(logreg_pt_tibble))]
+pt_picker_choices <- setNames(pt_picker_choices, 
+                              str_replace_all(pt_picker_choices, "_", " "))
