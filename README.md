@@ -1,4 +1,4 @@
-![image](https://user-images.githubusercontent.com/86251317/149637326-21825033-6ea4-429b-903b-a0560e10e49b.png)
+![image style = "text-align: center"](https://user-images.githubusercontent.com/86251317/149637326-21825033-6ea4-429b-903b-a0560e10e49b.png)
 
 **README for Nessun Data!**
 
