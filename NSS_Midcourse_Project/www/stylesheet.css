@@ -1,0 +1,140 @@
+@import url('https://fonts.googleapis.com/css2?family=Baskervville&display=swap');
+
+body {
+  background: url("wood.jpg") no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  background-color: #f8f8ff;
+  font-family: 'Baskervville', serif;
+}
+
+.navbar {
+  border: none;
+}
+
+.navbar-brand {
+  font-weight: bold;
+  font-size: 30px;
+  line-height: 30px;
+}
+
+.navbar-default .navbar-brand,
+.navbar-default .navbar-brand:hover {
+  color: #fafafa;
+}
+
+.navbar-default {
+  background-color: #000029;
+}
+
+.navbar-nav {
+  float: right;
+}
+
+.navbar-default .navbar-nav > li > a,
+.navbar-default .navbar-nav > li > a:hover {
+  color: #fafafa;
+  animation: none;
+}
+
+.navbar-default .navbar-nav > .active > a, 
+.navbar-default .navbar-nav > .active > a:focus, 
+.navbar-default .navbar-nav > .active > a:hover {
+  color: #000029;
+  background-color: #fafafa;
+}
+
+.navbar-default .navbar-nav > .active > a:focus {
+  animation: pulse;
+  animation-duration: 1s;
+}
+
+.well {
+  background-color: #fafafa;
+  box-shadow: 8px 8px 24px 8px #000;
+  border-radius: 16px;
+}
+
+#textbox {
+  margin: auto;
+  color: #000000;
+  background-color: #fafafa;
+  box-shadow: 8px 8px 24px 8px #000;
+  border-radius: 16px;
+  text-align: justify;
+  height: 600px;
+  width: 500px;
+  padding-left: 25px;
+  padding-right: 25px;
+  padding-bottom: 10px;
+  padding-top: 10px;
+}
+
+.nav-tabs {
+  border-bottom: transparent;
+  box-shadow: none;
+}
+
+.nav-tabs > li > a,
+.nav-tabs > li > a:hover {
+  color: #fafafa;
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  animation: none;
+}
+
+.nav-tabs > li.active > a:focus {
+  animation: pulse;
+  animation-duration: 1s;
+}
+
+.nav-tabs > li.active > a, 
+.nav-tabs > li.active > a:focus, 
+.nav-tabs > li.active > a:hover {
+  color: #000000;
+  background-color: #fafafa;
+  border-radius: 16px;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+iframe {
+  border-radius: 16px;
+}
+
+[data-value~="descriptive_active"] {
+  background-color: #fafafa;
+  box-shadow: 8px 8px 24px 8px #000;
+  border-radius: 16px;
+  padding-left: 25px;
+  padding-right: 25px;
+  padding-bottom: 10px;
+  padding-top: 10px;
+  animation: fadeInUp;
+  animation-duration: 1.5s;
+}
+
+[data-value~="logistic_active"] {
+  background-color: #fafafa;
+  box-shadow: 8px 8px 24px 8px #000;
+  border-radius: 16px;
+  padding-left: 25px;
+  padding-right: 25px;
+  padding-bottom: 10px;
+  padding-top: 10px;
+  animation: fadeInUp;
+  animation-duration: 1.5s;
+}
+
+[data-value~="about_active"] {
+  animation: fadeInUp;
+  animation-duration: 1.5s;
+}
+
+[data-value~="plots_active"] {
+  animation: fadeInUp;
+  animation-duration: 1.5s;
+}
