@@ -34,32 +34,28 @@ shinyUI(
                    id = "textbox",
                    h2("About"),
                    p("It's no surprise that data is powerful. 
-                     Data can reinforce our common sense or knowledge 
-                     about the world, or it can completely uproot our 
-                     understanding of it."),
+                     Data can reinforce our common sense or knowledge about the world, 
+                     or it can completely uproot our understanding of it."),
                    br(),
-                   p("For this RShiny App, I have used data to analyze one of my
-                     domain knowledges and great loves-classical music. 
-                     In music history classes, I was taught that western 
-                     classical music was a story of progression, 
-                     then deconstruction, and then reconstruction. 
-                     But how true is that analysis? What does the data show? 
-                     And can we reveal--through objective variables in 
-                     data--this musical path? Or does the data challenge our 
-                     assumptions about how we believe our ears are hearing 
-                     the differences between pieces?"),
+                   p("For this R Shiny App, I have used data to analyze one 
+                     of my domain knowledges and great loves-classical music. 
+                     In music history classes, I was taught that western classical 
+                     music was a story of progression, then deconstruction, and 
+                     then reconstruction. But how true is that analysis? What 
+                     does the data show? And can we reveal-through objective 
+                     variables in data-this musical path? Or does the data 
+                     challenge our assumptions about how we believe our ears 
+                     are hearing the differences between pieces?"),
                    br(),
                    p("Using the Spotify Web API, I analyzed objective variables 
-                     from roughly 2,066 pieces by 36 different classical composers 
-                     from 1098 CE to today to understand and answer these questions. 
+                     from 2,066 pieces by 36 different classical composers from 
+                     1098 CE to today to understand and answer these questions. 
                      These variables include key, tempo, volume, time signature, 
-                     pitch and timbre, as well as confidences related to these 
-                     variables. I sought with this RShiny App to replicate a 
+                     pitch and timbre, as well as confidences related to those 
+                     variables. I sought with this R Shiny App to replicate a 
                      specific problem in musicology and music theory: Can we 
                      determine what period a piece is from or which composer 
-                     composed it based on just listening to the music?"),
-                   br(),
-                   p("What follows are the results of that analysis.")
+                     composed it based on its musical characteristics?")
                  )
                )
              )
@@ -215,10 +211,6 @@ shinyUI(
                                                plotOutput("show_curve"))
                                       )
                              )
-                             # tabPanel("",
-                             #          icon = icon('volume-up','fa-2x'),
-                             #          value = "spectrogram_active",
-                             # ),
                  )
                )
              )

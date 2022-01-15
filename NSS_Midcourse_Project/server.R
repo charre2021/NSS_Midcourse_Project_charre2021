@@ -114,6 +114,9 @@ shinyServer(function(input, output, session) {
                                         TRUE,
                                         FALSE), 
                                 levels = c(TRUE, FALSE))) %>%
+      group_by(composer_period) %>% 
+      slice_sample(n = 500) %>% 
+      ungroup() %>% 
       select(log_value, c(input$logreg_variables)) %>% 
       initial_split()
     
@@ -241,7 +244,7 @@ shinyServer(function(input, output, session) {
                     linetype = "dashed",
                     color = "black") +
         geom_ribbon(aes(x = 1 - specificity, 
-                        ymin = 1 - specificity, 
+                        ymin = 0, 
                         ymax = sensitivity),
                     fill = "#000029",
                     alpha = 0.5) + 
