@@ -5,10 +5,15 @@ shinyUI(
       tags$link(
         rel = "stylesheet", 
         type = "text/css", 
-        href = "stylesheet.css")
+        href = "stylesheet.css"),
+      tags$link(
+        rel = "stylesheet",
+        href = "https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+      )
     ),
     tabPanel("", 
              icon = icon('book','fa-2x'),
+             value = "about_active",
              autoWaiter(
                id = c("frame", 
                       "comparison_density", 
@@ -61,6 +66,7 @@ shinyUI(
     ),
     tabPanel("", 
              icon = icon('chart-bar','fa-2x'),
+             value = "plots_active",
              sidebarLayout(
                sidebarPanel(
                  pickerInput(inputId = "composer",
@@ -73,7 +79,8 @@ shinyUI(
                  selectizeInput("updateSong", 
                                 "Select Song:", 
                                 choices = NULL),
-                 htmlOutput("frame")
+                 htmlOutput("frame"),
+                 style = "position: fixed; width: 32%",
                ),
                mainPanel(
                  tabsetPanel(id = "primary_tabs",
@@ -126,7 +133,7 @@ shinyUI(
                                                              "All"),
                                                  selected = "Baroque/Classical"
                                                ),
-                                               style='border-right:1px solid #d1d1d1; height: 400px;',
+                                               style='border-right: 1px solid #d1d1d1; height: 400px;',
                                         ),
                                         column(width = 9,
                                                plotOutput("comparison_density")
@@ -146,7 +153,7 @@ shinyUI(
                                                  inline = TRUE
                                                ),
                                                plotOutput("circlebarplot"),
-                                               style='border-right:1px solid #d1d1d1; height: 400px;',
+                                               style='border-right: 1px solid #d1d1d1; height: 400px;',
                                         ),
                                         column(width = 6,
                                                selectizeInput("section_start",
@@ -177,7 +184,7 @@ shinyUI(
                                                  inputId = "logreg_variables",
                                                  label = "Select Regression Variables:", 
                                                  choices = pt_picker_choices,
-                                                 selected = NULL,
+                                                 selected = pt_picker_choices,
                                                  options = list(`actions-box` = TRUE), 
                                                  multiple = TRUE
                                                ),
@@ -190,7 +197,7 @@ shinyUI(
                                                              "ROC"),
                                                  selected = "Calibration"
                                                ),
-                                               style = 'border-right:1px solid #d1d1d1; height: 400px;'
+                                               style = 'border-right: 1px solid #d1d1d1; height: 400px;'
                                         ),
                                         column(width = 9,
                                                DTOutput('logreg_table')
@@ -201,12 +208,17 @@ shinyUI(
                                       fluidRow(
                                         column(width = 6,
                                                plotOutput("confusion_matrix"),
-                                               style ='border-right:1px solid #d1d1d1; height: 400px;'
+                                               style ='border-right: 1px solid #d1d1d1; 
+                                               height: 400px;'
                                         ),
                                         column(width = 6,
                                                plotOutput("show_curve"))
                                       )
                              )
+                             # tabPanel("",
+                             #          icon = icon('volume-up','fa-2x'),
+                             #          value = "spectrogram_active",
+                             # ),
                  )
                )
              )

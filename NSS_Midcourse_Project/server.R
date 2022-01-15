@@ -203,8 +203,16 @@ shinyServer(function(input, output, session) {
       
     } else if(input$curve_type == "Gain") {
       gc_plot <- ggplot(gc_plot_data(), aes(.percent_tested, .percent_found)) + 
-        geom_line(color = "#000029") + 
-        geom_abline(intercept = 0, slope = 1, linetype = "dashed") + 
+        geom_line(color = "black") + 
+        geom_abline(intercept = 0, 
+                    slope = 1, 
+                    linetype = "dashed",
+                    color = "black") + 
+        geom_ribbon(aes(x = .percent_tested, 
+                        ymin = .percent_tested, 
+                        ymax = .percent_found),
+                    fill = "#000029",
+                    alpha = 0.5) + 
         scale_x_continuous(limits = c(-1,100),
                            expand = c(0,0)) +
         scale_y_continuous(limits = c(-1,105),
@@ -227,8 +235,16 @@ shinyServer(function(input, output, session) {
       
     } else {
       ggplot(roc_curve_data(), aes(x = 1 - specificity, y = sensitivity)) +
-        geom_line(color = "#000029") + 
-        geom_abline(intercept = 0, slope = 1, linetype = "dashed") +
+        geom_line(color = "black") + 
+        geom_abline(intercept = 0, 
+                    slope = 1, 
+                    linetype = "dashed",
+                    color = "black") +
+        geom_ribbon(aes(x = 1 - specificity, 
+                        ymin = 1 - specificity, 
+                        ymax = sensitivity),
+                    fill = "#000029",
+                    alpha = 0.5) + 
         scale_x_continuous(expand = c(0,0)) +
         scale_y_continuous(expand = c(0,0)) + 
         labs(y = "Sensitivity",
@@ -301,8 +317,6 @@ shinyServer(function(input, output, session) {
         (input$first_comparison_group == input$second_comparison_group)) {
       return()
     }
-    
-    
     
     density_plot <- density_filter() %>% 
       ggplot(aes(x = descriptive_value, fill = composer_group)) + 
@@ -456,7 +470,7 @@ shinyServer(function(input, output, session) {
               legend.position = "none",
               panel.grid = element_blank(),
               plot.background = element_rect(fill = "#fafafa", color = NA),
-              plot.margin = margin(t = 0, r = 0, b = 0, l = 0)) 
+              plot.margin = margin(t = 0, r = 0, b = 0, l = 0))
       
       plot(timbrebarplot)
     })
@@ -486,6 +500,7 @@ shinyServer(function(input, output, session) {
   output$frame <- renderUI({
     my_test <- tags$iframe(src = new_song(), 
                            width = "100%", 
-                           height = "380")
+                           height = "380",
+                           allow = "encrypted-media")
   })
 })

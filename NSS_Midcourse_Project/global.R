@@ -31,7 +31,6 @@ pitch_color_vector <- c("white",
                         "white")
 
 timbre_color_palette <- colorRampPalette(c("#080d13", "#12466b", "#d0f7ff"))(12)
-
 density_color_palette <- c("#080d13", "#12466b", "#d0f7ff")
 
 filter_for_group <- function(composer_period_group, sot, cv, cov) {
@@ -102,3 +101,4 @@ mean_mode <- function(whole_column) {
 pt_picker_choices <- names(logreg_pt_tibble)[8:length(names(logreg_pt_tibble))]
 pt_picker_choices <- setNames(pt_picker_choices, 
                               str_replace_all(pt_picker_choices, "_", " "))
+
