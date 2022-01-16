@@ -9,54 +9,57 @@ shinyUI(
       tags$link(
         rel = "stylesheet",
         href = "https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
-      )
+      ),
+      useSever(),
     ),
     tabPanel("", 
              icon = icon('book','fa-2x'),
              value = "about_active",
-             autoWaiter(
-               id = c("frame", 
-                      "comparison_density", 
-                      "circlebarplot", 
-                      "timbrebarplot",
-                      "logreg_table",
-                      "confusion_matrix",
-                      "show_curve"),
-               html = spin_wave(), 
-               color = '#000029'
-             ),
-             fluidRow(
-               column(
-                 width = 12,
-                 align = "center",
-                 box(
-                   width = 12,
-                   id = "textbox",
-                   h2("About"),
-                   p("It's no surprise that data is powerful. 
-                     Data can reinforce our common sense or knowledge about the world, 
-                     or it can completely uproot our understanding of it."),
-                   br(),
-                   p("For this R Shiny App, I have used data to analyze one 
-                     of my domain knowledges and great loves-classical music. 
-                     In music history classes, I was taught that western classical 
-                     music was a story of progression, then deconstruction, and 
-                     then reconstruction. But how true is that analysis? What 
-                     does the data show? And can we reveal-through objective 
-                     variables in data-this musical path? Or does the data 
-                     challenge our assumptions about how we believe our ears 
-                     are hearing the differences between pieces?"),
-                   br(),
-                   p("Using the Spotify Web API, I analyzed objective variables 
-                     from 2,066 pieces by 36 different classical composers from 
-                     1098 CE to today to understand and answer these questions. 
-                     These variables include key, tempo, volume, time signature, 
-                     pitch and timbre, as well as confidences related to those 
-                     variables. I sought with this R Shiny App to replicate a 
-                     specific problem in musicology and music theory: Can we 
-                     determine what period a piece is from or which composer 
-                     composed it based on its musical characteristics?")
-                 )
+             autoWaiter(id = c("frame", 
+                               "comparison_density", 
+                               "circlebarplot", 
+                               "timbrebarplot",
+                               "logreg_table",
+                               "confusion_matrix",
+                               "show_curve",
+                               "timeline"),
+                        html = spin_wave(), 
+                        color = '#000029'),
+             sidebarLayout(
+               sidebarPanel(id = "about_sidebar",
+                            h2("About"),
+                            p("It's no surprise that data is powerful. Data can 
+                              reinforce our common sense or knowledge about the 
+                              world, or it can completely uproot our understanding of it."),
+                            br(),
+                            p("For this R Shiny App, I have used data to analyze one 
+                              of my domain knowledges and great loves-classical music.
+                              In music history classes, I was taught that western 
+                              classical music was a story of progression, then 
+                              deconstruction, and then reconstruction. But how 
+                              true is that analysis? What does the data show? 
+                              And can we reveal-through objective variables in 
+                              data-this musical path? Or does the data challenge 
+                              our assumptions about how we believe our ears 
+                              are hearing the differences between pieces?"),
+                            br(),
+                            p("Using the Spotify Web API, I analyzed objective 
+                              variables from 2,066 pieces by 36 different 
+                              classical composers from 1098 CE to today to 
+                              understand and answer these questions. These 
+                              variables include key, tempo, volume, time signature, 
+                              pitch and timbre, as well as confidences related to those 
+                              variables. I sought with this R Shiny App to replicate a 
+                              specific problem in musicology and music theory: Can we 
+                              determine what period a piece is from or which composer 
+                              composed it based on its musical characteristics?"),
+                            br()),
+               mainPanel(id = "about_info",
+                         h4("Timeline of Western Music",
+                            style = "text-align: center;"),
+                         fluidRow(id = "timeline_box",
+                                  timevisOutput("timeline"),
+                                  style = "height: 675px;")
                )
              )
     ),

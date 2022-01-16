@@ -506,4 +506,105 @@ shinyServer(function(input, output, session) {
                            height = "380",
                            allow = "encrypted-media")
   })
+  
+  output$timeline <- renderTimevis(
+    timevis(bkg_data,
+            options = list(
+              zoomable = FALSE,
+              horizontalScroll = TRUE
+            ),
+            fit = FALSE,
+            showZoom = FALSE,
+            height = "650px"
+    ) %>% 
+      setWindow(start = "1710-01-01",
+                end = "1910-01-01") %>% 
+      addItems(data.frame(start = c("500-01-01",
+                                    "1400-01-01",
+                                    "1600-01-01",
+                                    "1750-01-01",
+                                    "1800-01-01",
+                                    "1900-01-01",
+                                    "1950-01-01"),
+                          end = c("1400-01-01",
+                                  "1600-01-01",
+                                  "1750-01-01",
+                                  "1800-01-01",
+                                  "1900-01-01",
+                                  "1950-01-01",
+                                  "2022-01-22"),
+                          content = c("Medieval",
+                                      "Renaissance",
+                                      "Baroque",
+                                      "Classical",
+                                      "Romantic",
+                                      "Modern",
+                                      "Post-Modern"),
+                          type = "background",
+                          style = c("color: #000029; background-color:rgba(18, 70, 107, 0.3)",
+                                    "color: #000029; background-color:rgba(208, 247, 255, 0.3)",
+                                    "color: #000029; background-color:rgba(18, 70, 107, 0.3)",
+                                    "color: #000029; background-color:rgba(208, 247, 255, 0.3)",
+                                    "color: #000029; background-color:rgba(18, 70, 107, 0.3)",
+                                    "color: #000029; background-color:rgba(208, 247, 255, 0.3)",
+                                    "color: #000029; background-color:rgba(18, 70, 107, 0.3)"
+                          ))))
+  
+  observeEvent(input$timeline_selected, {
+    composer_data <- bkg_data %>% 
+      filter(id == input$timeline_selected) %>% 
+      select(Composer, start, end, Period, Sample, Text)
+    
+    reading_material <- read_html(composer_data$Text) %>% 
+      html_node("p") %>% 
+      html_text2()
+    
+    if(!composer_data$Composer %in% c("Eric Whitacre",
+                                      "Arvo Part",
+                                      "Hildegard von Bingen")) {
+      showModal(modalDialog(title = composer_data$Composer,
+                            HTML(paste0("Composer from the ",composer_data$Period,
+                                        " period that lived from ",composer_data$start,
+                                        " to ",composer_data$end,
+                                        ".</br></br><div style = 'text-align:justify'><i>",
+                                        reading_material,
+                                        "</i></br></br>",
+                                        source,
+                                        "</div></br></br>",
+                                        composer_data$Sample)),
+                            easyClose = TRUE,
+                            footer = NULL))
+    } else if (composer_data$Composer == "Hildegard von Bingen") {
+      showModal(modalDialog(title = composer_data$Composer,
+                            HTML(paste0("Composer from the ", composer_data$Period,
+                                        " period that lived from 1098 CE to ",
+                                        composer_data$end,
+                                        ".</br></br><div style = 'text-align:justify'><i>",
+                                        reading_material,
+                                        "</i></br></br>",
+                                        source,
+                                        "</div></br></br>",
+                                        composer_data$Sample)),
+                            easyClose = TRUE,
+                            footer = NULL))
+    } else {
+      showModal(modalDialog(title = composer_data$Composer,
+                            HTML(paste0("Composer that is alive today!",
+                                        "</br></br><div style = 'text-align:justify'><i>",
+                                        reading_material,
+                                        "</i></br></br>",
+                                        source,
+                                        "</div></br></br><div id = spotify_mini>",
+                                        composer_data$Sample,
+                                        "</div>")),
+                            easyClose = TRUE,
+                            fade = TRUE,
+                            footer = NULL))
+      
+    }
+  })
+  
+  sever(html = disconnected,
+        bg_image = disconnect_image, 
+        color = "#fafafa")
 })

@@ -7,6 +7,10 @@ library(showtext)
 library(tidymodels)
 library(DT)
 library(caret)
+library(sever)
+library(timevis)
+library(readxl)
+library(rvest)
 
 if(!any(grepl("Baskervville", font_families(), ignore.case = TRUE))){
   font_add_google("Baskervville", "Baskervville")
@@ -16,6 +20,16 @@ showtext_auto()
 pitch_timbre <- read_rds("data/tidy_pitch_timbre.rds")
 general_audio_values <- read_rds("data/tidy_descriptive_values.rds")
 logreg_pt_tibble <- read_rds("data/logreg_pt_tibble.rds")
+bkg_data <- read_excel("data/background_data.xlsx",
+                     na = "NA")
+bkg_data <- bkg_data %>% 
+  mutate(id = 1:nrow(bkg_data),
+         start = Birth,
+         end = Death,
+         end = replace_na(end, "January 22, 2022"),
+         type = "box",
+         content = paste0("<img src=",Image," width='50' height='60'>"))
+
 
 pitch_color_vector <- c("white",
                         "black",
@@ -101,4 +115,15 @@ mean_mode <- function(whole_column) {
 pt_picker_choices <- names(logreg_pt_tibble)[8:length(names(logreg_pt_tibble))]
 pt_picker_choices <- setNames(pt_picker_choices, 
                               str_replace_all(pt_picker_choices, "_", " "))
+
+source <- "Source: Naxos Classical Composer Database."
+
+disconnected <- sever_default(
+  title = "", 
+  subtitle = HTML("<div style = 'font-size: 20px;'>
+                  Your session has been disconnected.</div>"), 
+  button = "Reconnect"
+)
+
+disconnect_image <- "https://www.alaskapublic.org/wp-content/uploads/2020/12/Tongass-National-Forest.jpg"
 
