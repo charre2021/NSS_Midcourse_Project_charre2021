@@ -14,10 +14,10 @@ Using the Spotify Web API, I analyzed objective variables from **2,066** pieces 
 
 The R Shiny App is separated into three parts as shown below:
 
-The first section (represented by the “Book” icon) contains a summary of the R Shiny App.
+The first section (represented by the “Book” icon) contains a summary of the R Shiny App, as well as a composer timeline. Users may click on the pictures of this timeline and pull up information regarding the various composers analyzed.
 
 <p align = "center">
-    <img src = "https://user-images.githubusercontent.com/86251317/149637565-1bc7ca7c-4b15-4ac8-9b68-cbeec3bb1943.png" />
+    <img src = "https://user-images.githubusercontent.com/86251317/149792885-4e5ebf89-f115-4913-bed6-16c6f51ad390.png" />
 </p>
 
 The second section (represented by the “Bar Chart” and “Pie Chart” icons) allows a user to filter by composer and song to evaluate pitch class and timbre scores for that song and to compare a composer to the same or different period groups with respect to variables like key, time signature, etc.
