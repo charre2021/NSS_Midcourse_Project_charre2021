@@ -1,6 +1,5 @@
 library(shiny)
 library(tidyverse)
-library(shinydashboard)
 library(waiter)
 library(shinyWidgets)
 library(showtext)
@@ -106,15 +105,15 @@ time_signature_classes <- c("Unknown Meter",
                             "Compound Meter",
                             "Odd Meter (3, 2, 2)")
 
-mean_mode <- function(whole_column) {
-  unique_column <- unique(whole_column)
-  all_modes <- (tabulate(match(whole_column,unique_column)))
-  return(mean(unique_column[all_modes == max(all_modes)]))
-}
-
 pt_picker_choices <- names(logreg_pt_tibble)[8:length(names(logreg_pt_tibble))]
-pt_picker_choices <- setNames(pt_picker_choices, 
-                              str_replace_all(pt_picker_choices, "_", " "))
+pt_picker_choices <- setNames(pt_picker_choices,str_replace_all(pt_picker_choices, "_", " "))
+
+mean_group <- pt_picker_choices[grep("Mean", names(pt_picker_choices))]
+mean_timbre_group <- mean_group[grep("Timbre", names(mean_group))]
+mean_pitch_group <- mean_group[grep("Pitch", names(mean_group))]
+median_group <- pt_picker_choices[grep("Median", names(pt_picker_choices))]
+median_timbre_group <- median_group[grep("Timbre", names(median_group))]
+median_pitch_group <- median_group[grep("Pitch", names(median_group))]
 
 source <- "Source: Naxos Classical Composer Database."
 

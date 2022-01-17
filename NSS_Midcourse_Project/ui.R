@@ -10,7 +10,7 @@ shinyUI(
         rel = "stylesheet",
         href = "https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
       ),
-      useSever(),
+      useSever()
     ),
     tabPanel("", 
              icon = icon('book','fa-2x'),
@@ -178,16 +178,19 @@ shinyUI(
                                                              "Modern/Post-Modern"),
                                                  selected = "Romantic"
                                                ),
-                                               br(),
                                                pickerInput(
                                                  inputId = "logreg_variables",
                                                  label = "Select Regression Variables:", 
-                                                 choices = pt_picker_choices,
-                                                 selected = pt_picker_choices,
-                                                 options = list(`actions-box` = TRUE), 
+                                                 choices = list(
+                                                   `Mean Timbre` = mean_timbre_group,
+                                                   `Median Timbre` = median_timbre_group,
+                                                   `Mean Pitch` = mean_pitch_group,
+                                                   `Median Pitch` = median_pitch_group
+                                                 ),
+                                                 selected = mean_timbre_group,
+                                                 options = list(`actions-box` = TRUE),
                                                  multiple = TRUE
                                                ),
-                                               br(),
                                                awesomeRadio(
                                                  inputId = "curve_type",
                                                  label = "Calibration or Gain Curve:", 
@@ -196,6 +199,9 @@ shinyUI(
                                                              "ROC"),
                                                  selected = "Calibration"
                                                ),
+                                               numericInput("setseed", 
+                                                            "Set Seed:", 
+                                                            value = 36),
                                                style = 'border-right: 1px solid #d1d1d1; height: 400px;'
                                         ),
                                         column(width = 9,

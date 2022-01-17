@@ -1,5 +1,11 @@
 shinyServer(function(input, output, session) {
   
+  seed <- reactiveValues(seed_value = 36)
+  
+  observeEvent(input$setseed, {
+    seed$seed_value <- input$setseed
+  })
+  
   filtered_by_composer <- reactive({
     general_audio_values %>% 
       filter(composer == input$composer)
@@ -109,6 +115,9 @@ shinyServer(function(input, output, session) {
   })
   
   split_tibble <- reactive({
+    
+    set.seed(seed$seed_value)
+    
     initial_split_tibble <- logreg_pt_tibble %>% 
       mutate(log_value = factor(if_else(composer_period == input$logreg_comparison_group,
                                         TRUE,
@@ -134,6 +143,9 @@ shinyServer(function(input, output, session) {
   })
   
   logreg_model <- reactive({
+    
+    set.seed(seed$seed_value)
+    
     logistic_reg() %>% 
       set_engine("glm") %>% 
       set_mode("classification") %>% 
@@ -188,7 +200,9 @@ shinyServer(function(input, output, session) {
     
     if(input$curve_type == "Calibration") {
       calibration_curve <- ggplot(logreg_calibration()) + 
-        labs(title = "Calibration Curve for Regression Model") + 
+        labs(title = "Calibration Curve for Regression Model",
+             y = "% Observed Events",
+             x = "Bin Midpoint of Predicted Probabilities") + 
         scale_y_continuous(limits = c(0,100)) +
         scale_x_continuous(limits = c(0,100)) + 
         theme_minimal() +
@@ -273,7 +287,7 @@ shinyServer(function(input, output, session) {
     options = list(columnDefs = list(list(className = 'dt-right', 
                                           targets = 0:4))),
     {
-      tidy(logreg_model(), exponentiate = TRUE) %>% 
+      tidy(logreg_model()) %>% 
         mutate(term = sapply(term, 
                              function(x) str_replace_all(x,c("_"=" ","`" = "")))) %>% 
         mutate_if(is.numeric, ~round(.,2)) %>% 
@@ -318,7 +332,7 @@ shinyServer(function(input, output, session) {
     if (("Loudness" %in% input$comparison_value) &
         ("Confidence" %in% input$confidence_or_value) |
         (input$first_comparison_group == input$second_comparison_group)) {
-      return()
+      plot(error)
     }
     
     density_plot <- density_filter() %>% 
@@ -364,12 +378,15 @@ shinyServer(function(input, output, session) {
         scale_x_continuous(expand = expansion(mult = c(0,0)))
     }
     
-    dv_mean_mode <- mean_mode(density_filter()$descriptive_value)
-    range_max <- max(density_filter()$descriptive_value)
-    range_min <- min(density_filter()$descriptive_value)
-    range_portion <- (range_max - range_min)/2.90
+    reference_point <- ggplot_build(density_plot)$data[[1]] %>% 
+      filter(y == max(y)) %>% 
+      select(x)
     
-    if(dv_mean_mode < range_portion) {
+    range_max <- max(ggplot_build(density_plot)$data[[1]]$x)
+    range_min <- min(ggplot_build(density_plot)$data[[1]]$x)
+    range_threshold <- (range_max - range_min)/2
+    
+    if(reference_point < range_threshold) {
       
       density_plot <- density_plot +
         theme(legend.position = c(0.985, .985),
@@ -553,7 +570,7 @@ shinyServer(function(input, output, session) {
   observeEvent(input$timeline_selected, {
     composer_data <- bkg_data %>% 
       filter(id == input$timeline_selected) %>% 
-      select(Composer, start, end, Period, Sample, Text)
+      select(Composer, start, end, Period, Sample, Text, Image)
     
     reading_material <- read_html(composer_data$Text) %>% 
       html_node("p") %>% 
@@ -562,7 +579,10 @@ shinyServer(function(input, output, session) {
     if(!composer_data$Composer %in% c("Eric Whitacre",
                                       "Arvo Part",
                                       "Hildegard von Bingen")) {
-      showModal(modalDialog(title = composer_data$Composer,
+      showModal(modalDialog(title = HTML(paste0("<div style = 'text-align:center'>",
+                                                "<img src=",composer_data$Image,
+                                                " height='250'></br></br><b>",
+                                                composer_data$Composer,"</b></div>")),
                             HTML(paste0("Composer from the ",composer_data$Period,
                                         " period that lived from ",composer_data$start,
                                         " to ",composer_data$end,
@@ -575,7 +595,10 @@ shinyServer(function(input, output, session) {
                             easyClose = TRUE,
                             footer = NULL))
     } else if (composer_data$Composer == "Hildegard von Bingen") {
-      showModal(modalDialog(title = composer_data$Composer,
+      showModal(modalDialog(title = HTML(paste0("<div style = 'text-align:center'>",
+                                                "<img src=",composer_data$Image,
+                                                " height='250'></br></br><b>",
+                                                composer_data$Composer,"</b></div>")),
                             HTML(paste0("Composer from the ", composer_data$Period,
                                         " period that lived from 1098 CE to ",
                                         composer_data$end,
@@ -588,7 +611,10 @@ shinyServer(function(input, output, session) {
                             easyClose = TRUE,
                             footer = NULL))
     } else {
-      showModal(modalDialog(title = composer_data$Composer,
+      showModal(modalDialog(title = HTML(paste0("<div style = 'text-align:center'>",
+                                                "<img src=",composer_data$Image,
+                                                " height='250'></br></br><b>",
+                                                composer_data$Composer,"</b></div>")),
                             HTML(paste0("Composer that is alive today!",
                                         "</br></br><div style = 'text-align:justify'><i>",
                                         reading_material,
@@ -603,6 +629,12 @@ shinyServer(function(input, output, session) {
       
     }
   })
+  
+  cleave(
+    html = p("Those variables are not available. Try some others."),
+    color = "#fafafa",
+    bg_color = "#000029"
+  )
   
   sever(html = disconnected,
         bg_image = disconnect_image, 
