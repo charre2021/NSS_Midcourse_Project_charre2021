@@ -17,7 +17,7 @@ The R Shiny App is separated into three parts as shown below:
 The first section (represented by the “Book” icon) contains a summary of the R Shiny App, as well as a composer timeline. Users may click on the pictures of this timeline and pull up information regarding the various composers analyzed.
 
 <p align = "center">
-    <img src = "https://user-images.githubusercontent.com/86251317/149792885-4e5ebf89-f115-4913-bed6-16c6f51ad390.png" />
+    <img src = "https://user-images.githubusercontent.com/86251317/149794061-a14a921c-0c04-486a-b238-373aa5ab72e9.png" />
 </p>
 
 The second section (represented by the “Bar Chart” and “Pie Chart” icons) allows a user to filter by composer and song to evaluate pitch class and timbre scores for that song and to compare a composer to the same or different period groups with respect to variables like key, time signature, etc.
