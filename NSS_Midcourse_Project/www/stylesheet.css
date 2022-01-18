@@ -57,19 +57,22 @@ body {
   border-radius: 16px;
 }
 
-#textbox {
-  margin: auto;
+#about_sidebar {
+  color: #000000;
+  background-color: #fafafa;
+  box-shadow: 8px 8px 24px 8px #000;
+  border-radius: 16px;
+  position: fixed;
+  width: 31%;
+  text-align: justify;
+}
+
+#about_info {
   color: #000000;
   background-color: #fafafa;
   box-shadow: 8px 8px 24px 8px #000;
   border-radius: 16px;
   text-align: justify;
-  height: 600px;
-  width: 500px;
-  padding-left: 25px;
-  padding-right: 25px;
-  padding-bottom: 10px;
-  padding-top: 10px;
 }
 
 .nav-tabs {
@@ -137,4 +140,17 @@ iframe {
 [data-value~="plots_active"] {
   animation: fadeInUp;
   animation-duration: 1.5s;
+}
+
+.vis-timeline {
+  background-color: #fafafa;
+  font-family: 'Baskervville', serif;
+}
+
+.vis-item {
+  border-color: transparent;
+  font-size: 12pt;
+  background: #000029;
+  color: #fafafa;
+  font-family: 'Baskervville', serif;
 }
