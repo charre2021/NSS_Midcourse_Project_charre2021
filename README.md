@@ -23,13 +23,13 @@ The first section (represented by the “Book” icon) contains a summary of the
 The second section (represented by the “Bar Chart” and “Pie Chart” icons) allows a user to filter by composer and song to evaluate pitch class and timbre scores for that song and to compare a composer to the same or different period groups with respect to variables like key, time signature, etc.
 
 <p align = "center">
-    <img src = "https://user-images.githubusercontent.com/86251317/149637583-c662248c-31ac-49a6-853c-7843f449135b.png" />
+    <img src = "https://user-images.githubusercontent.com/86251317/150033115-e09ef70e-0b66-4828-8a3f-c7a1044dcf9c.png" />
 </p>
 
 The third section (represented by the “Bar Chart” and “Line Chart” icons) allows a user to filter by period and run a logistic regression to determine whether certain pitch class and timbre scores by section can predict the correct period.
 
 <p align = "center">
-    <img src = "https://user-images.githubusercontent.com/86251317/149637596-ee145c00-6a37-4fc6-b2bc-d6f958519801.png" />
+    <img src = "https://user-images.githubusercontent.com/86251317/150033071-0b45e793-30c4-4540-a1a4-ed786fdcf638.png" />
 </p>
 
 **Further Discovery:**
