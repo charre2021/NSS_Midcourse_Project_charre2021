@@ -341,8 +341,7 @@ shinyServer(function(input, output, session) {
       ggplot(aes(x = descriptive_value, fill = composer_group)) + 
       geom_density(alpha = 0.5)
     
-    density_plot <- density_plot +
-      scale_y_continuous(expand = expansion(mult = c(0,0.1))) + 
+    density_plot <- density_plot + 
       labs(title = "Group Comparison of Descriptive Values",
            x = "Descriptive Value",
            y = "Density") + 
@@ -400,6 +399,10 @@ shinyServer(function(input, output, session) {
               legend.justification = c("left", "top"),
               legend.box.just = "left")
     }
+    
+    density_plot <- density_plot +
+      scale_y_continuous(limits = c(0,max(ggplot_build(density_plot)$data[[1]]$y) * 1.3),
+                         expand = expansion(mult = c(0,0)))
     
     plot(density_plot)
     
