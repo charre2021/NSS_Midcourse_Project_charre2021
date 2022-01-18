@@ -176,7 +176,7 @@ shinyUI(
                                                              "Baroque/Classical",
                                                              "Romantic",
                                                              "Modern/Post-Modern"),
-                                                 selected = "Romantic"
+                                                 selected = "Medieval/Renaissance"
                                                ),
                                                pickerInput(
                                                  inputId = "logreg_variables",
@@ -187,7 +187,7 @@ shinyUI(
                                                    `Mean Pitch` = mean_pitch_group,
                                                    `Median Pitch` = median_pitch_group
                                                  ),
-                                                 selected = mean_timbre_group,
+                                                 selected = c(mean_timbre_group,mean_pitch_group),
                                                  options = list(`actions-box` = TRUE),
                                                  multiple = TRUE
                                                ),

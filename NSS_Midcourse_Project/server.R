@@ -118,14 +118,16 @@ shinyServer(function(input, output, session) {
     
     set.seed(seed$seed_value)
     
-    initial_split_tibble <- logreg_pt_tibble %>% 
+    pre_split_tibble <- logreg_pt_tibble %>% 
       mutate(log_value = factor(if_else(composer_period == input$logreg_comparison_group,
                                         TRUE,
                                         FALSE), 
                                 levels = c(TRUE, FALSE))) %>%
       group_by(composer_period) %>% 
-      slice_sample(n = 500) %>% 
-      ungroup() %>% 
+      slice_sample(n = 2000) %>% 
+      ungroup()
+    
+    initial_split_tibble <- pre_split_tibble %>% 
       select(log_value, c(input$logreg_variables)) %>% 
       initial_split()
     
