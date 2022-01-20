@@ -119,12 +119,27 @@ shinyServer(function(input, output, session) {
     set.seed(seed$seed_value)
     
     pre_split_tibble <- logreg_pt_tibble %>% 
-      mutate(log_value = factor(if_else(composer_period == input$logreg_comparison_group,
+      mutate(log_value = factor(if_else(composer == input$composer,
                                         TRUE,
                                         FALSE), 
-                                levels = c(TRUE, FALSE))) %>%
-      group_by(composer_period) %>% 
-      slice_sample(n = 2000) %>% 
+                                levels = c(TRUE, FALSE)))
+    
+    if(input$regression_comparison_group != "All") {
+      pre_split_tibble <- pre_split_tibble %>% 
+        filter(composer == input$composer | 
+                 composer_period == input$regression_comparison_group)
+    }
+    
+    sample_reference <- pre_split_tibble %>% 
+      filter(log_value == TRUE) %>% 
+      select(log_value) %>% 
+      count()
+    
+    sample_reference <- sample_reference[[1]] * 1.66
+    
+    pre_split_tibble <- pre_split_tibble %>% 
+      group_by(log_value) %>% 
+      slice_sample(n = sample_reference) %>% 
       ungroup()
     
     initial_split_tibble <- pre_split_tibble %>% 
@@ -282,23 +297,35 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  output$logreg_table <- renderDT(
-    caption = tags$caption(HTML("<h4><b>Logistic Regression Results</b></h4>"),
-                           style = "color: black; text-align: Center;"),
-    rownames = FALSE,
-    options = list(columnDefs = list(list(className = 'dt-right', 
-                                          targets = 0:4))),
-    {
-      tidy(logreg_model()) %>% 
-        mutate(term = sapply(term, 
-                             function(x) str_replace_all(x,c("_"=" ","`" = "")))) %>% 
-        mutate_if(is.numeric, ~round(.,2)) %>% 
-        rename("Term" = "term",
-               "Estimate" = "estimate",
-               "Standard Error" = "std.error",
-               "Statistic" = "statistic",
-               "P-Value" = "p.value")
-    })
+  output$logreg_table <- renderDT({
+    show_table <- tidy(logreg_model()) %>% 
+      mutate(term = sapply(term, 
+                           function(x) str_replace_all(x,c("_"=" ","`" = "")))) %>% 
+      mutate_if(is.numeric, ~round(.,2)) %>% 
+      rename("Term" = "term",
+             "Estimate" = "estimate",
+             "Standard Error" = "std.error",
+             "Statistic" = "statistic",
+             "P-Value" = "p.value") %>% 
+      mutate(Correlation = if_else(Estimate >= 0.5, 
+                                   "Positive",
+                                   if_else(Estimate <= -0.5, 
+                                           "Negative",
+                                           "Weak"))) %>% 
+      slice(-1)
+    
+    show_table <- as.datatable(formattable(show_table,
+                                           list(`Correlation` = icon_formatter,
+                                                `Estimate` = highlight_formatter,
+                                                `P-Value` = stat_formatter)),
+                               caption = tags$caption(HTML("<h4><b>Logistic Regression Results</b></h4>"),
+                                                      style = "color: black; text-align: Center;"),
+                               rownames = FALSE,
+                               options = list(columnDefs = list(list(className = 'dt-left', 
+                                                                     targets = 0:5))))
+    
+    return(show_table)
+  })
   
   output$confusion_matrix <- renderPlot({
     ggplot(logreg_results(), 
@@ -428,7 +455,7 @@ shinyServer(function(input, output, session) {
       score_points <- ggplot_build(circlebarplot)$data[[1]]$y
       
       circlebarplot <- circlebarplot +
-        ylim(-scale * 1.05, max(score_points) * 1.25) +
+        ylim(-scale * 1.05, max(score_points) * 1.5) +
         coord_polar(start = -pi/12) +
         geom_text(aes(x = class,
                       y = -scale/3.5,
@@ -437,7 +464,7 @@ shinyServer(function(input, output, session) {
                   family = "Baskervville",
                   inherit.aes = FALSE) +
         geom_text(aes(x = class,
-                      y = max(score_points) * 1.25,
+                      y = max(score_points) * 1.5,
                       label = round(score,2)),
                   size = 4.25,
                   family = "Baskervville",
@@ -586,7 +613,7 @@ shinyServer(function(input, output, session) {
                                       "Hildegard von Bingen")) {
       showModal(modalDialog(title = HTML(paste0("<div style = 'text-align:center'>",
                                                 "<img src=",composer_data$Image,
-                                                " height='250'></br></br><b>",
+                                                " height='250' style='border-radius:16px'></br></br><b>",
                                                 composer_data$Composer,"</b></div>")),
                             HTML(paste0("Composer from the ",composer_data$Period,
                                         " period that lived from ",composer_data$start,
@@ -602,7 +629,7 @@ shinyServer(function(input, output, session) {
     } else if (composer_data$Composer == "Hildegard von Bingen") {
       showModal(modalDialog(title = HTML(paste0("<div style = 'text-align:center'>",
                                                 "<img src=",composer_data$Image,
-                                                " height='250'></br></br><b>",
+                                                " height='250' style='border-radius:16px'></br></br><b>",
                                                 composer_data$Composer,"</b></div>")),
                             HTML(paste0("Composer from the ", composer_data$Period,
                                         " period that lived from 1098 CE to ",
@@ -618,7 +645,7 @@ shinyServer(function(input, output, session) {
     } else {
       showModal(modalDialog(title = HTML(paste0("<div style = 'text-align:center'>",
                                                 "<img src=",composer_data$Image,
-                                                " height='250'></br></br><b>",
+                                                " height='250' style='border-radius:16px'></br></br><b>",
                                                 composer_data$Composer,"</b></div>")),
                             HTML(paste0("Composer that is alive today!",
                                         "</br></br><div style = 'text-align:justify'><i>",
@@ -635,8 +662,88 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  observeEvent(input$updateSong,{
+    
+    if(length(filtered_by_composer_and_song()$section_start) == 0) {
+      return()
+    }
+    
+    length_of_song <- filtered_by_composer_and_song() %>% 
+      mutate(section_start = as.numeric(period_to_seconds(section_start)),
+             section_duration = as.numeric(period_to_seconds(section_duration))) %>% 
+      filter(section_start == max(section_start)) %>% 
+      slice(1) %>% 
+      summarize(section_start + section_duration) %>% 
+      pull()
+    
+    updateNumericInput(session,
+                       "setstarttime",
+                       max = length_of_song)
+  })
+  
+  
+  song_file_name <- reactive({
+    song_name <- "Piano Concerto No. 2 in C Minor, Op. 18: 2. Adagio sostenuto"
+    paste0("data/songs/",str_replace_all(song_name,":","_"),".wav")
+  })
+  
+  wav_file <- eventReactive(input$spectro, {
+    readWave(song_file_name(),
+             from = input$setstarttime,
+             to = input$setstarttime + input$duration,
+             units = "seconds")
+  })
+  
+  signal <- reactive({
+    wav_file()@left - mean(wav_file()@left)
+  })
+  
+  output$waveform <- renderPlot({
+    signal_tbl <- tibble(Signal = signal(), Samples = (1:length(signal())))
+    
+    wave_plot <- ggplot(signal_tbl, 
+                        aes(y = Signal, 
+                            x = Samples)) + 
+      geom_line(color = "#000029") +
+      labs(title = "Waveform of Selected Sample") + 
+      scale_x_continuous(expand = expansion(0,0),
+                         labels = scales::comma) +
+      scale_y_continuous(labels = scales::comma) +
+      theme_minimal() +
+      theme(plot.title = element_text(hjust = 0.5),
+            text = element_text(size = 15,
+                                family = "Baskervville",
+                                color = "#000000"),
+            panel.background = element_rect(fill = "#fafafa",
+                                            colour = "#000000"),
+            panel.grid = element_blank(),
+            plot.background = element_rect(fill = "#fafafa", color = NA),
+            plot.margin = margin(t = 0, r = 0, b = 0, l = 0))
+    
+    plot(wave_plot)
+  })
+  
+  output$spectrogram <- renderPlot({
+    ggspectro(signal(), f = wav_file()@samp.rate, ovlp = 50) + 
+      geom_tile(aes(fill = amplitude)) + 
+      scale_fill_viridis(option = "magma") + 
+      labs(title = "Spectrogram of Selected Sample",
+           fill = "Amplitude (dbs)") +
+      theme_minimal() +
+      theme(plot.title = element_text(hjust = 0.5),
+            text = element_text(size = 15,
+                                family = "Baskervville",
+                                color = "#000000"),
+            panel.background = element_rect(fill = "#fafafa",
+                                            colour = "#000000"),
+            panel.grid = element_blank(),
+            plot.background = element_rect(fill = "#fafafa", color = NA),
+            plot.margin = margin(t = 0, r = 0, b = 0, l = 0))
+  })
+  
+  
   cleave(
-    html = p("Those variables are not available. Try some others."),
+    html = p("Not available. Please try again."),
     color = "#fafafa",
     bg_color = "#000029"
   )

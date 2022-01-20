@@ -22,15 +22,17 @@ shinyUI(
                                "logreg_table",
                                "confusion_matrix",
                                "show_curve",
-                               "timeline"),
+                               "timeline",
+                               "waveform",
+                               "spectrogram"),
                         html = spin_wave(), 
                         color = '#000029'),
              sidebarLayout(
                sidebarPanel(id = "about_sidebar",
                             h2("About"),
-                            p("It's no surprise that data is powerful. Data can 
-                              reinforce our common sense or knowledge about the 
-                              world, or it can completely uproot our understanding of it."),
+                            p("It's no surprise that data is powerful.
+                              Data can reinforce our common sense or knowledge about 
+                              the world, or it can completely uproot our understanding of it."),
                             br(),
                             p("For this R Shiny App, I have used data to analyze one 
                               of my domain knowledges and great loves-classical music.
@@ -38,7 +40,7 @@ shinyUI(
                               classical music was a story of progression, then 
                               deconstruction, and then reconstruction. But how 
                               true is that analysis? What does the data show? 
-                              And can we reveal-through objective variables in 
+                                And can we reveal-through objective variables in 
                               data-this musical path? Or does the data challenge 
                               our assumptions about how we believe our ears 
                               are hearing the differences between pieces?"),
@@ -47,13 +49,12 @@ shinyUI(
                               variables from 2,066 pieces by 36 different 
                               classical composers from 1098 CE to today to 
                               understand and answer these questions. These 
-                              variables include key, tempo, volume, time signature, 
+                              variables include key, tempo, volume, time signature,
                               pitch and timbre, as well as confidences related to those 
                               variables. I sought with this R Shiny App to replicate a 
-                              specific problem in musicology and music theory: Can we 
+                              specific problem in musicology and music theory: Can we
                               determine what period a piece is from or which composer 
-                              composed it based on its musical characteristics?"),
-                            br()),
+                              composed it based on its musical characteristics?")),
                mainPanel(id = "about_info",
                          h4("Timeline of Western Music",
                             style = "text-align: center;"),
@@ -167,16 +168,18 @@ shinyUI(
                                       value = "logistic_active",
                                       fluidRow(
                                         column(width = 3,
-                                               HTML("<h4><b>Regression Analysis</b></h4>"),
+                                               HTML("<h4><b>Regression Analysis</br>
+                                                    By Composer</b></h4>"),
                                                br(),
-                                               awesomeRadio(
-                                                 inputId = "logreg_comparison_group",
-                                                 label = "Choose Regression Group:", 
+                                               selectInput(
+                                                 inputId = "regression_comparison_group",
+                                                 label = "Choose Regression Comparison Group:", 
                                                  choices = c("Medieval/Renaissance",
                                                              "Baroque/Classical",
                                                              "Romantic",
-                                                             "Modern/Post-Modern"),
-                                                 selected = "Medieval/Renaissance"
+                                                             "Modern/Post-Modern",
+                                                             "All"),
+                                                 selected = "Romantic"
                                                ),
                                                pickerInput(
                                                  inputId = "logreg_variables",
@@ -193,7 +196,7 @@ shinyUI(
                                                ),
                                                awesomeRadio(
                                                  inputId = "curve_type",
-                                                 label = "Calibration or Gain Curve:", 
+                                                 label = "Curve Type:", 
                                                  choices = c("Calibration",
                                                              "Gain",
                                                              "ROC"),
@@ -219,10 +222,43 @@ shinyUI(
                                         column(width = 6,
                                                plotOutput("show_curve"))
                                       )
+                             ),
+                             tabPanel("",
+                                      icon = icon('volume-up','fa-2x'),
+                                      value = "spectrogram_active",
+                                      fluidRow(column(3,
+                                                      HTML("<h4><b>Sound Sample Analysis</b></h4>"),
+                                                      br(),
+                                                      actionBttn(
+                                                        inputId = "spectro",
+                                                        label = "Start Analysis",
+                                                        style = "jelly", 
+                                                        color = "primary",
+                                                        size = "sm"
+                                                      ),
+                                                      br(),
+                                                      br(),
+                                                      numericInput("setstarttime", 
+                                                                   "Start Time in Seconds:", 
+                                                                   value = 36,
+                                                                   min = 0,
+                                                                   max = 100,
+                                                                   step = 1),
+                                                      br(),
+                                                      sliderTextInput("duration",
+                                                                      "Set Duration of Sample:",
+                                                                      choices = c(1:15)),
+                                                      br(),
+                                                      style = 'border-right: 1px solid #d1d1d1; height: 400px;'),
+                                               column(9,
+                                                      plotOutput("waveform"))),
+                                      br(),
+                                      hr(color = "#d1d1d1"),
+                                      fluidRow(plotOutput("spectrogram")))
                              )
                  )
                )
              )
     )
   )
-)
+  
