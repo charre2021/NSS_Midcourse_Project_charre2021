@@ -26,7 +26,7 @@ The second section (represented by the “Bar Chart” and “Pie Chart” icons
     <img src = "https://user-images.githubusercontent.com/86251317/150273776-c691348e-1017-46a2-b812-8774847d8c00.png" />
 </p>
 
-The third section (represented by the “Bar Chart” and “Line Chart” icons) allows a user to filter by period and run a logistic regression to determine whether certain pitch class and timbre scores by section can predict the correct period.
+The third section (represented by the “Bar Chart” and “Line Chart” icons) allows a user to filter by composer and run a logistic regression to determine whether certain pitch class and timbre scores by section can predict the correct composer.
 
 <p align = "center">
     <img src = "https://user-images.githubusercontent.com/86251317/150273832-66d69c61-f59f-4e4c-b999-06cdc455b3c3.png" />
@@ -40,11 +40,11 @@ The fourth section (represented by the “Bar Chart” and “Volume” icons) a
 
 **Further Discovery:**
 
--   The predictive value of the model may be improved by different data—perhaps, scraped from sheet music or from audio files. For classical music specifically, sheet music may be better since audio analysis may add “noise” into the data that sheet music would not and could provide a more direct analysis of each composer.
+-   The predictive value of the model could be improved by different data—perhaps, scraped from sheet music or from audio files. For classical music specifically, sheet music could be better since audio analysis may add “noise” into the data that sheet music would not and could provide a more direct analysis of each composer's music.
     
--   More advanced machine learning algorithms may improve the model’s predictive capabilities.
+-   More advanced machine learning algorithms could improve the model’s predictive capabilities.
     
--   Further spectrographic analysis and audio comparison between sections of pieces may further improve predictive value of the model.
+-   Further spectrographic analysis and audio comparison between sections of pieces could further improve predictive value of the model.
 
 **Defined terms:**
 
@@ -60,7 +60,7 @@ The fourth section (represented by the “Bar Chart” and “Volume” icons) a
     
 -   “**Pitch**” means how high or low a note sounds. It is similar to frequency but not wholly represented by it. In western classical music, pitches are represented by letters and sharps or flats.
     
--   “**Timbre**” means what the sound *sounds* like. It is a very complex concept that is partially represented by a combination of amplitude,  duration and frequency, usually as represented on a spectrogram. Timbre is what makes a human voice sound like the human voice, and a trumpet sound like a trumpet.
+-   “**Timbre**” means what the sound *sounds* like. It is a very complex concept that is partially represented by a combination of amplitude, duration and frequency, usually as represented on a spectrogram. Timbre is what makes a human voice sound like the human voice, and a trumpet sound like a trumpet.
 
 **Historical Background:**
 
@@ -70,9 +70,7 @@ The fourth section (represented by the “Bar Chart” and “Volume” icons) a
     <img src = "https://user-images.githubusercontent.com/86251317/149637464-589c4c10-b007-44a7-a39e-8c163425ebc9.png" />
 </p>
 
--   The “**Renaissance Period**” of western classical music spanned the
-    entire Renaissance as well (1400 – 1600 CE). The Renaissance Period
-    still largely featured modal vocal music, but relaxation of religious rules meant that composers wrote secular vocal music and instrumental music as well. In addition, that modal vocal music involved advanced polyphony (multiple lines of music) and rhythmic variations. **Claudio Monteverdi** (1567–1643 CE) is a composer represented in this R Shiny App from this era.
+-   The “**Renaissance Period**” of western classical music spanned the entire Renaissance as well (1400 – 1600 CE). The Renaissance Period still largely featured modal vocal music, but relaxation of religious rules meant that composers wrote secular vocal music and instrumental music as well. In addition, that modal vocal music involved advanced polyphony (multiple lines of music) and rhythmic variations. **Claudio Monteverdi** (1567–1643 CE) is a composer represented in this R Shiny App from this era.
     
 <p align = "center">
     <img src = "https://user-images.githubusercontent.com/86251317/149637476-33f7c795-590c-4cf0-8ef5-0e633ee698f1.png" />
