@@ -559,11 +559,11 @@ shinyServer(function(input, output, session) {
   output$timeline <- renderTimevis(
     timevis(bkg_data,
             options = list(
-              zoomable = FALSE,
+              zoomable = TRUE,
               horizontalScroll = TRUE
             ),
             fit = FALSE,
-            showZoom = FALSE,
+            showZoom = TRUE,
             height = "650px"
     ) %>% 
       setWindow(start = "1710-01-01",
@@ -662,6 +662,27 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  filtered_by_composer2 <- reactive({
+    general_audio_values %>% 
+      filter(composer == input$composer2)
+  })
+  
+  filtered_by_composer_and_song2 <- reactive({
+    filtered_by_composer() %>% 
+      filter(track_name == input$updateSong2)
+  })
+  
+  observeEvent(input$composer2,{
+    
+    song_choices <- filtered_by_composer2() %>%
+      select(track_name) %>% 
+      rename("Name" = "track_name")
+    
+    updateSelectizeInput(session,
+                         "updateSong2",
+                         choices = song_choices)
+  })
+  
   observeEvent(input$updateSong,{
     
     if(length(filtered_by_composer_and_song()$section_start) == 0) {
@@ -681,6 +702,40 @@ shinyServer(function(input, output, session) {
                        max = length_of_song)
   })
   
+  observeEvent(input$updateSong2,{
+    
+    if(length(filtered_by_composer_and_song2()$section_start) == 0) {
+      return()
+    }
+    
+    length_of_song <- filtered_by_composer_and_song2() %>% 
+      mutate(section_start = as.numeric(period_to_seconds(section_start)),
+             section_duration = as.numeric(period_to_seconds(section_duration))) %>% 
+      filter(section_start == max(section_start)) %>% 
+      slice(1) %>% 
+      summarize(section_start + section_duration) %>% 
+      pull()
+    
+    updateNumericInput(session,
+                       "setstarttime",
+                       max = length_of_song)
+  })
+  
+  song_file_name2 <- reactive({
+    song_name <- "Piano Concerto No. 2 in C Minor, Op. 18: 2. Adagio sostenuto"
+    paste0("data/songs/",str_replace_all(song_name,":","_"),".wav")
+  })
+  
+  wav_file2 <- eventReactive(input$spectro, {
+    readWave(song_file_name2(),
+             from = input$setstarttime2,
+             to = input$setstarttime2 + input$duration,
+             units = "seconds")
+  })
+  
+  signal2 <- reactive({
+    wav_file2()@left - mean(wav_file2()@left)
+  })
   
   song_file_name <- reactive({
     song_name <- "Piano Concerto No. 2 in C Minor, Op. 18: 2. Adagio sostenuto"
@@ -699,13 +754,19 @@ shinyServer(function(input, output, session) {
   })
   
   output$waveform <- renderPlot({
-    signal_tbl <- tibble(Signal = signal(), Samples = (1:length(signal())))
+    signal_tbl <- tibble(Signal = signal(), 
+                         Samples = (1:length(signal())),
+                         Track = "Sample 1")
+    signal_tbl2 <- tibble(Signal = signal2(), 
+                          Samples = (1:length(signal2())),
+                          Track = "Sample 2")
+    signal_tbl <- bind_rows(signal_tbl, signal_tbl2)
     
     wave_plot <- ggplot(signal_tbl, 
                         aes(y = Signal, 
                             x = Samples)) + 
       geom_line(color = "#000029") +
-      labs(title = "Waveform of Selected Sample") + 
+      labs(title = "Waveforms of Selected Samples") + 
       scale_x_continuous(expand = expansion(0,0),
                          labels = scales::comma) +
       scale_y_continuous(labels = scales::comma) +
@@ -718,17 +779,83 @@ shinyServer(function(input, output, session) {
                                             colour = "#000000"),
             panel.grid = element_blank(),
             plot.background = element_rect(fill = "#fafafa", color = NA),
-            plot.margin = margin(t = 0, r = 0, b = 0, l = 0))
+            plot.margin = margin(t = 0, r = 0, b = 0, l = 0)) + 
+      facet_wrap(~Track, nrow = 2)
     
     plot(wave_plot)
   })
   
   output$spectrogram <- renderPlot({
-    ggspectro(signal(), f = wav_file()@samp.rate, ovlp = 50) + 
-      geom_tile(aes(fill = amplitude)) + 
-      scale_fill_viridis(option = "magma") + 
-      labs(title = "Spectrogram of Selected Sample",
-           fill = "Amplitude (dbs)") +
+    if(input$spectro_sample == "Sample 1") {
+      ggspectro(signal(), f = wav_file()@samp.rate, ovlp = 50) + 
+        geom_tile(aes(fill = amplitude)) + 
+        scale_fill_viridis(option = "magma") + 
+        labs(title = "Spectrogram of Sample 1",
+             fill = "Amplitude (dbs)") +
+        theme_minimal() +
+        theme(plot.title = element_text(hjust = 0.5),
+              text = element_text(size = 15,
+                                  family = "Baskervville",
+                                  color = "#000000"),
+              panel.background = element_rect(fill = "#fafafa",
+                                              colour = "#000000"),
+              panel.grid = element_blank(),
+              legend.position = "none",
+              plot.background = element_rect(fill = "#fafafa", color = NA),
+              plot.margin = margin(t = 0, r = 0, b = 0, l = 0))
+    } else {
+      ggspectro(signal2(), f = wav_file2()@samp.rate, ovlp = 50) + 
+        geom_tile(aes(fill = amplitude)) + 
+        scale_fill_viridis(option = "magma") + 
+        labs(title = "Spectrogram of Sample 2",
+             fill = "Amplitude (dbs)") +
+        theme_minimal() +
+        theme(plot.title = element_text(hjust = 0.5),
+              text = element_text(size = 15,
+                                  family = "Baskervville",
+                                  color = "#000000"),
+              panel.background = element_rect(fill = "#fafafa",
+                                              colour = "#000000"),
+              panel.grid = element_blank(),
+              legend.position = "none",
+              plot.background = element_rect(fill = "#fafafa", color = NA),
+              plot.margin = margin(t = 0, r = 0, b = 0, l = 0))
+    }
+  })
+  
+  cov_spec_data <- eventReactive(input$spectro, {
+    number_of_covs <- 21
+    cov_spec_data <- covspectro(signal(), 
+                                signal2(), 
+                                f = wav_file()@samp.rate,
+                                n = number_of_covs,
+                                plot = F) %>% 
+      as_tibble() %>% 
+      mutate(time = seq(0,
+                        input$duration, 
+                        by = input$duration/(number_of_covs - 1)))
+    
+  })
+  
+  x_covmax <- eventReactive(input$spectro, {
+    cov_spec_data() %>% 
+      filter(cov == covmax) %>% 
+      select(time) %>% 
+      .[[1]]
+  })
+  
+  output$spectrogram_cov <- renderPlot({
+    
+    ggplot(cov_spec_data(), 
+           aes(time, cov)) +
+      geom_line(color = "#000029") +
+      geom_point(aes(x_covmax(), covmax), 
+                 shape = 21, 
+                 color = "red", 
+                 size = 6) + 
+      labs(title = "Covariance of Spectrogram Samples",
+           y = "Covariance",
+           x = "Time in Seconds") +
       theme_minimal() +
       theme(plot.title = element_text(hjust = 0.5),
             text = element_text(size = 15,
@@ -737,10 +864,40 @@ shinyServer(function(input, output, session) {
             panel.background = element_rect(fill = "#fafafa",
                                             colour = "#000000"),
             panel.grid = element_blank(),
+            legend.position = "none",
             plot.background = element_rect(fill = "#fafafa", color = NA),
-            plot.margin = margin(t = 0, r = 0, b = 0, l = 0))
+            plot.margin = margin(t = 0, r = 5, b = 0, l = 0)) + 
+      geom_text(aes(x_covmax(), 
+                    covmax * 0.9,
+                    label = round(cov_spec_data()$covmax,2)),
+                color = "red",
+                size = 5,
+                check_overlap = TRUE)
   })
   
+  observeEvent(input$primary_tabs, {
+    if(input$primary_tabs == "spectrogram_active") {
+      show(id = "composer2", anim = TRUE, animType = "fade")
+      show(id = "updateSong2", anim = TRUE, animType = "fade")
+      runjs(
+        "let well_coll = document.getElementsByClassName('well');
+        for(let i = 0, len = well_coll.length; i < len; i++)
+        {
+        well_coll[i].style.position = 'absolute';
+        }"
+      )
+    } else {
+      hide(id = "composer2", anim = TRUE, animType = "fade")
+      hide(id = "updateSong2", anim = TRUE, animType = "fade")
+      runjs(
+        "let well_coll = document.getElementsByClassName('well');
+        for(let i = 0, len = well_coll.length; i < len; i++)
+        {
+        well_coll[i].style.position = 'fixed';
+        }"
+      )
+    }
+  })
   
   cleave(
     html = p("Not available. Please try again."),

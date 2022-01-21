@@ -15,6 +15,7 @@ library(seewave)
 library(tuneR)
 library(viridis)
 library(lubridate)
+library(shinyjs)
 
 if(!any(grepl("Baskervville", font_families(), ignore.case = TRUE))){
   font_add_google("Baskervville", "Baskervville")
@@ -168,4 +169,7 @@ highlight_formatter <- formatter("span",
                                                    `font.weight` = ifelse(x >= 0.5 | x <= -0.5, 
                                                                           "bold",
                                                                           "none")))
+
+
+
 
