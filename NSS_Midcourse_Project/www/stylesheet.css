@@ -132,6 +132,18 @@ iframe {
   animation-duration: 1.5s;
 }
 
+[data-value~="spectrogram_active"] {
+  background-color: #fafafa;
+  box-shadow: 8px 8px 24px 8px #000;
+  border-radius: 16px;
+  padding-left: 25px;
+  padding-right: 25px;
+  padding-bottom: 10px;
+  padding-top: 10px;
+  animation: fadeInUp;
+  animation-duration: 1.5s;
+}
+
 [data-value~="about_active"] {
   animation: fadeInUp;
   animation-duration: 1.5s;
@@ -154,3 +166,13 @@ iframe {
   color: #fafafa;
   font-family: 'Baskervville', serif;
 }
+
+.img {
+  border-radius: 16px;
+}
+
+.bttn-jelly.bttn-primary {
+    background: #000029;
+    color: #fafafa;
+}
+

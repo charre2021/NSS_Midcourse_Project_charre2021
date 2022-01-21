@@ -10,6 +10,12 @@ library(sever)
 library(timevis)
 library(readxl)
 library(rvest)
+library(formattable)
+library(seewave)
+library(tuneR)
+library(viridis)
+library(lubridate)
+library(shinyjs)
 
 if(!any(grepl("Baskervville", font_families(), ignore.case = TRUE))){
   font_add_google("Baskervville", "Baskervville")
@@ -20,7 +26,7 @@ pitch_timbre <- read_rds("data/tidy_pitch_timbre.rds")
 general_audio_values <- read_rds("data/tidy_descriptive_values.rds")
 logreg_pt_tibble <- read_rds("data/logreg_pt_tibble.rds")
 bkg_data <- read_excel("data/background_data.xlsx",
-                     na = "NA")
+                       na = "NA")
 bkg_data <- bkg_data %>% 
   mutate(id = 1:nrow(bkg_data),
          start = Birth,
@@ -28,7 +34,6 @@ bkg_data <- bkg_data %>%
          end = replace_na(end, "January 22, 2022"),
          type = "box",
          content = paste0("<img src=",Image," width='50' height='60'>"))
-
 
 pitch_color_vector <- c("white",
                         "black",
@@ -42,6 +47,7 @@ pitch_color_vector <- c("white",
                         "white",
                         "black",
                         "white")
+
 
 timbre_color_palette <- colorRampPalette(c("#080d13", "#12466b", "#d0f7ff"))(12)
 density_color_palette <- c("#080d13", "#12466b", "#d0f7ff")
@@ -121,8 +127,49 @@ disconnected <- sever_default(
   title = "", 
   subtitle = HTML("<div style = 'font-size: 20px;'>
                   Your session has been disconnected.</div>"), 
-  button = "Reconnect"
-)
+  button = "Reconnect")
 
 disconnect_image <- "https://www.alaskapublic.org/wp-content/uploads/2020/12/Tongass-National-Forest.jpg"
+
+icon_formatter <- formatter("span", 
+                            x ~ icontext(ifelse(x == "Positive", 
+                                                "ok", 
+                                                ifelse(x == "Negative", 
+                                                       "remove", 
+                                                       "minus")), 
+                                         ifelse(x == "Positive", 
+                                                "Positive", 
+                                                ifelse(x == "Negative", 
+                                                       "Negative", 
+                                                       "Weak"))), 
+                            style = x ~ style(color = ifelse(x == "Positive", 
+                                                             "green", 
+                                                             ifelse(x == "Negative", 
+                                                                    "red", 
+                                                                    "grey"))))
+
+stat_formatter <- formatter("span",
+                            style = x ~ style(display = "block", 
+                                              padding = "0px 4px 4px 4px", 
+                                              `border-radius` = "4px", 
+                                              `background-color` = ifelse(x <= 0.05, 
+                                                                          "#000029",
+                                                                          "none"),
+                                              color = ifelse(x <= 0.05, 
+                                                             "#fafafa",
+                                                             "none")))
+
+highlight_formatter <- formatter("span",
+                                 style = x ~ style(display = "block", 
+                                                   padding = "0px 4px 4px 4px", 
+                                                   `border-radius` = "4px", 
+                                                   `background-color` = ifelse(x >= 0.5 | x <= -0.5, 
+                                                                               "yellow",
+                                                                               "none"),
+                                                   `font.weight` = ifelse(x >= 0.5 | x <= -0.5, 
+                                                                          "bold",
+                                                                          "none")))
+
+
+
 
