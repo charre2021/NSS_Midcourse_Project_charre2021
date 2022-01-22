@@ -1,5 +1,11 @@
+/* Import font. */
 @import url('https://fonts.googleapis.com/css2?family=Baskervville&display=swap');
-
+/* Set background for the app (pieces of wood). 
+In general colors are a dark blue and off-white with some variation. 
+Hover effects were deliberately taken out. 
+Focus effects are animated by a fade up (for sections) or pulse (for tabs). 
+Radius of 16px with some variation and a blurred shadow. 
+Text is justified where possible. */
 body {
   background: url("wood.jpg") no-repeat center center fixed; 
   -webkit-background-size: cover;

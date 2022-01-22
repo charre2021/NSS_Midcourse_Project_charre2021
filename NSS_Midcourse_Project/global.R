@@ -16,17 +16,22 @@ library(tuneR)
 library(viridis)
 library(lubridate)
 library(shinyjs)
+library(stringdist)
 
+# Check if desired font is loaded and if not, load it for use.
 if(!any(grepl("Baskervville", font_families(), ignore.case = TRUE))){
   font_add_google("Baskervville", "Baskervville")
 }
 showtext_auto()
 
+# Load in dataframes.
 pitch_timbre <- read_rds("data/tidy_pitch_timbre.rds")
 general_audio_values <- read_rds("data/tidy_descriptive_values.rds")
 logreg_pt_tibble <- read_rds("data/logreg_pt_tibble.rds")
 bkg_data <- read_excel("data/background_data.xlsx",
                        na = "NA")
+
+# Timevis reads data as a dataframe with specific columns. Modify bkg_data accordingly.
 bkg_data <- bkg_data %>% 
   mutate(id = 1:nrow(bkg_data),
          start = Birth,
@@ -35,6 +40,7 @@ bkg_data <- bkg_data %>%
          type = "box",
          content = paste0("<img src=",Image," width='50' height='60'>"))
 
+# Change circle bar plot based on piano keys!
 pitch_color_vector <- c("white",
                         "black",
                         "white",
@@ -48,10 +54,11 @@ pitch_color_vector <- c("white",
                         "black",
                         "white")
 
-
+# Create color palettes for timbre bar plot and density plot.
 timbre_color_palette <- colorRampPalette(c("#080d13", "#12466b", "#d0f7ff"))(12)
 density_color_palette <- c("#080d13", "#12466b", "#d0f7ff")
 
+# Create filtering functions for density plot based on a group or all groups.
 filter_for_group <- function(composer_period_group, sot, cv, cov) {
   tbl <- general_audio_values %>% 
     filter(composer_period == composer_period_group,
@@ -91,6 +98,7 @@ filter_for_all <- function(sot, cv, cov) {
   return(tbl)
 }
 
+# Labels for density plot for keys and time signatures.
 pitch_classes <- c("C",
                    "C#/Db",
                    "D",
@@ -111,6 +119,7 @@ time_signature_classes <- c("Unknown Meter",
                             "Compound Meter",
                             "Odd Meter (3, 2, 2)")
 
+# Create choices and groups for logistic regression plots.
 pt_picker_choices <- names(logreg_pt_tibble)[8:length(names(logreg_pt_tibble))]
 pt_picker_choices <- setNames(pt_picker_choices,str_replace_all(pt_picker_choices, "_", " "))
 
@@ -121,8 +130,10 @@ median_group <- pt_picker_choices[grep("Median", names(pt_picker_choices))]
 median_timbre_group <- median_group[grep("Timbre", names(median_group))]
 median_pitch_group <- median_group[grep("Pitch", names(median_group))]
 
+# For about information.
 source <- "Source: Naxos Classical Composer Database."
 
+# Disconnect screen text and images.
 disconnected <- sever_default(
   title = "", 
   subtitle = HTML("<div style = 'font-size: 20px;'>
@@ -131,6 +142,8 @@ disconnected <- sever_default(
 
 disconnect_image <- "https://www.alaskapublic.org/wp-content/uploads/2020/12/Tongass-National-Forest.jpg"
 
+# Formatting for table based on whether variable is highly correlated and
+# statistically significant.
 icon_formatter <- formatter("span", 
                             x ~ icontext(ifelse(x == "Positive", 
                                                 "ok", 
@@ -169,7 +182,5 @@ highlight_formatter <- formatter("span",
                                                    `font.weight` = ifelse(x >= 0.5 | x <= -0.5, 
                                                                           "bold",
                                                                           "none")))
-
-
-
-
+# Vector of filenames for pulling for sound analysis.
+song_filenames <- list.files(path = "data/songs/") %>% as_vector()

@@ -1,11 +1,13 @@
 shinyServer(function(input, output, session) {
   
+  # Set seed value for logistic regression.
   seed <- reactiveValues(seed_value = 36)
   
   observeEvent(input$setseed, {
     seed$seed_value <- input$setseed
   })
   
+  # Various filters tied to composer and song selectors in the sidebar.
   filtered_by_composer <- reactive({
     general_audio_values %>% 
       filter(composer == input$composer)
@@ -42,6 +44,7 @@ shinyServer(function(input, output, session) {
       filter(pitch_or_timbre == "Timbre")
   })
   
+  # Update section selections based on song selected in the sidebar.
   observeEvent(input$updateSong,{
     section_choices <- pt_filtered_by_composer_and_song() %>% 
       filter(mean_or_median == input$mean_or_median) %>%
@@ -54,12 +57,14 @@ shinyServer(function(input, output, session) {
                          choices = section_choices)
   })
   
+  # Sets levels for legend in the density plot.
   comparison_group_levels <- reactive(
     c(input$composer, 
       input$first_comparison_group,
       input$second_comparison_group)
   )
   
+  # Creates dataframe to pull data from for density plot for the selected composer.
   composer_tbl <- reactive({
     single_composer_tbl <- filtered_by_composer() %>%
       filter(track_or_section_value == input$section_or_track,
@@ -79,7 +84,7 @@ shinyServer(function(input, output, session) {
     return(single_composer_tbl)
   })
   
-  
+  # Creates dataframes for comparison groups.
   first_comparison_group_tbl <- reactive({
     if (!(input$first_comparison_group %in% "All")) {
       filter_for_group(input$first_comparison_group,
@@ -106,6 +111,7 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  # Combine density plot dataframes for plotting.
   density_filter <- reactive({
     bind_rows(composer_tbl(),
               first_comparison_group_tbl(),
@@ -114,6 +120,8 @@ shinyServer(function(input, output, session) {
                                      levels = comparison_group_levels()))
   })
   
+  # Create split tibble with logistic values based on selected composer.
+  # Sample is balanced so that model is not overwhelmed by "false" values.
   split_tibble <- reactive({
     
     set.seed(seed$seed_value)
@@ -149,6 +157,7 @@ shinyServer(function(input, output, session) {
     return(initial_split_tibble)
   })
   
+  # Split into training and testing sets and train model.
   testing_set <- reactive({
     split_tibble() %>% 
       testing()
@@ -169,6 +178,7 @@ shinyServer(function(input, output, session) {
       fit(log_value~.,data = training_set())
   })
   
+  # Create logistic regression classification results for confusion matrix.
   logreg_results <- reactive({
     logreg_results <- testing_set() %>% 
       select(log_value) %>% 
@@ -186,6 +196,7 @@ shinyServer(function(input, output, session) {
     return(logreg_results)
   })
   
+  # Create logistic regression probabilities for "curves".
   logreg_probabilities <- reactive({
     testing_set() %>% 
       select(log_value) %>% 
@@ -194,7 +205,7 @@ shinyServer(function(input, output, session) {
                         type = "prob"))
   })
   
-  
+  # Generate all curve data.
   logreg_calibration <- reactive({
     calibration(log_value ~ .pred_TRUE,
                 data = logreg_probabilities(),
@@ -213,6 +224,7 @@ shinyServer(function(input, output, session) {
               estimate = .pred_TRUE)
   })
   
+  # Generate curve plots based on radio button selection.
   output$show_curve <- renderPlot({
     
     if(input$curve_type == "Calibration") {
@@ -297,6 +309,7 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  # Generate datatable output for logistic regression coefficients (minus intercept).
   output$logreg_table <- renderDT({
     show_table <- tidy(logreg_model()) %>% 
       mutate(term = sapply(term, 
@@ -314,6 +327,7 @@ shinyServer(function(input, output, session) {
                                            "Weak"))) %>% 
       slice(-1)
     
+    # Run table formatting functions on specified columns and return datatable.
     show_table <- as.datatable(formattable(show_table,
                                            list(`Correlation` = icon_formatter,
                                                 `Estimate` = highlight_formatter,
@@ -327,6 +341,9 @@ shinyServer(function(input, output, session) {
     return(show_table)
   })
   
+  # Generate confusion matrix for logistic regression model.
+  # Alpha based on number of results but color is based on whether that category
+  # is one the model got "wrong".
   output$confusion_matrix <- renderPlot({
     ggplot(logreg_results(), 
            aes(x = factor(Reference, levels = c("TRUE", "FALSE")), 
@@ -356,8 +373,10 @@ shinyServer(function(input, output, session) {
             plot.margin = margin(t = 0, r = 0, b = 0, l = 0))
   })
   
-  
+  # Generate density plot.
   output$comparison_density <- renderPlot({
+    
+    # There are no loudness confidences in Spotify data so handle error.
     if (("Loudness" %in% input$comparison_value) &
         ("Confidence" %in% input$confidence_or_value) |
         (input$first_comparison_group == input$second_comparison_group)) {
@@ -386,6 +405,7 @@ shinyServer(function(input, output, session) {
             plot.margin = margin(t = 0, r = 10, b = 0, l = 10),
             legend.margin = margin(t = 0, r = 0, b = 0, l = 0))
     
+    # Adjust x-axis based on keys and time signatures and their labels.
     if (("Key" %in% input$comparison_value) &
         ("Value" %in% input$confidence_or_value)) {
       density_plot <- density_plot +
@@ -406,6 +426,9 @@ shinyServer(function(input, output, session) {
         scale_x_continuous(expand = expansion(mult = c(0,0)))
     }
     
+    # The legend has to move based on where the curves land,
+    # So max y was used from the ggplot_build to adjust its horizontal location.
+    # Y axis is also expanded slightly as well to account for this.
     reference_point <- ggplot_build(density_plot)$data[[1]] %>% 
       filter(y == max(y)) %>% 
       select(x)
@@ -432,11 +455,14 @@ shinyServer(function(input, output, session) {
                          expand = expansion(mult = c(0,0)))
     
     plot(density_plot)
-    
   })
   
+  # Generate circle bar plot.
+  # The idea here was that the circle bar plot looks like the "Circle of Fifths"
+  # In music and is colored by appropriate piano key.
   output$circlebarplot <- renderPlot({
     
+    # Removes a warning during load times where there is "technically" no data.
     if(length(circular_bar_plot_filter()$class) == 0)
       return()
     
@@ -452,11 +478,14 @@ shinyServer(function(input, output, session) {
                  color = "black") +
         scale_fill_manual(values = pitch_color_vector)
       
+      # A lot of the code here deals with trying to adjust the text labels
+      # as the circle expands or contracts.
       score_points <- ggplot_build(circlebarplot)$data[[1]]$y
       
       circlebarplot <- circlebarplot +
         ylim(-scale * 1.05, max(score_points) * 1.5) +
         coord_polar(start = -pi/12) +
+        # Inner labels are pitches and outer labels are pitch frequencies.
         geom_text(aes(x = class,
                       y = -scale/3.5,
                       label = class),
@@ -485,6 +514,7 @@ shinyServer(function(input, output, session) {
     })
   })
   
+  # Generate timbre bar plot.
   output$timbrebarplot <- renderPlot({
     
     if(length(timbre_bar_plot_filter()$class) == 0)
@@ -502,6 +532,7 @@ shinyServer(function(input, output, session) {
       
       score_points <- ggplot_build(timbrebarplot)$data[[1]]$y
       
+      # Adjusting text labels based on what the bar values are.
       timbrebarplot <- timbrebarplot +
         geom_text(aes(x = class,
                       y = if_else(score < 0, score - 6, score + 6),
@@ -528,6 +559,7 @@ shinyServer(function(input, output, session) {
     })
   })
   
+  # Adjust song selections based on composer selected.
   observeEvent(input$composer,{
     
     song_choices <- filtered_by_composer() %>%
@@ -539,6 +571,7 @@ shinyServer(function(input, output, session) {
                          choices = song_choices)
   })
   
+  # Generate query for embedded Spotify player.
   new_song <- reactive({
     query <- filtered_by_composer_and_song() %>% 
       select(track_id) %>% 
@@ -549,6 +582,7 @@ shinyServer(function(input, output, session) {
            "?utm_source=generator&theme=0")
   })
   
+  # Generate main Spotify player.
   output$frame <- renderUI({
     my_test <- tags$iframe(src = new_song(), 
                            width = "100%", 
@@ -556,6 +590,7 @@ shinyServer(function(input, output, session) {
                            allow = "encrypted-media")
   })
   
+  # Generate timeline visualization.
   output$timeline <- renderTimevis(
     timevis(bkg_data,
             options = list(
@@ -568,6 +603,7 @@ shinyServer(function(input, output, session) {
     ) %>% 
       setWindow(start = "1710-01-01",
                 end = "1910-01-01") %>% 
+      # Add in period "ribbons".
       addItems(data.frame(start = c("500-01-01",
                                     "1400-01-01",
                                     "1600-01-01",
@@ -599,6 +635,7 @@ shinyServer(function(input, output, session) {
                                     "color: #000029; background-color:rgba(18, 70, 107, 0.3)"
                           ))))
   
+  # Create modal dialog box whenever a timeline portrait is clicked.
   observeEvent(input$timeline_selected, {
     composer_data <- bkg_data %>% 
       filter(id == input$timeline_selected) %>% 
@@ -608,9 +645,10 @@ shinyServer(function(input, output, session) {
       html_node("p") %>% 
       html_text2()
     
+    # Generate image, Naxos bio and mini Spotify player with different song for
+    # each composer.
     if(!composer_data$Composer %in% c("Eric Whitacre",
-                                      "Arvo Part",
-                                      "Hildegard von Bingen")) {
+                                      "Arvo Part")) {
       showModal(modalDialog(title = HTML(paste0("<div style = 'text-align:center'>",
                                                 "<img src=",composer_data$Image,
                                                 " height='250' style='border-radius:16px'></br></br><b>",
@@ -662,6 +700,7 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  # Create additional composer and song filters for sound analysis.
   filtered_by_composer2 <- reactive({
     general_audio_values %>% 
       filter(composer == input$composer2)
@@ -683,6 +722,7 @@ shinyServer(function(input, output, session) {
                          choices = song_choices)
   })
   
+  # Update max start time based on chosen song.
   observeEvent(input$updateSong,{
     
     if(length(filtered_by_composer_and_song()$section_start) == 0) {
@@ -721,38 +761,80 @@ shinyServer(function(input, output, session) {
                        max = length_of_song)
   })
   
+  # Pull in song name and match to file name.
   song_file_name2 <- reactive({
-    song_name <- "Piano Concerto No. 2 in C Minor, Op. 18: 2. Adagio sostenuto"
-    paste0("data/songs/",str_replace_all(song_name,":","_"),".wav")
+    song_name <- paste0(str_replace_all(strtrim(input$updateSong2,96),
+                                        c('":' = '_',
+                                          ':"' = '_',
+                                          ":" = "_", 
+                                          "/" = "_",
+                                          '"' = '_')),".wav")
+    
   })
   
+  # Try to read in Wave file as is. 
+  # If not found, take the first 25 characters and fuzzy match to a filename
+  # And read that file name.
   wav_file2 <- eventReactive(input$spectro, {
-    readWave(song_file_name2(),
-             from = input$setstarttime2,
-             to = input$setstarttime2 + input$duration,
-             units = "seconds")
+    file <- tryCatch({
+      return(readWave(paste0("data/songs/",song_file_name2()),
+                      from = input$setstarttime2,
+                      to = input$setstarttime2 + input$duration,
+                      units = "seconds"))
+    },
+    error = function(cond) {
+      replacement_index <- amatch(substring(song_file_name2(),1,25), 
+                                  substring(song_filenames,1,25), 
+                                  method = "dl",
+                                  maxDist = 5)
+      return(readWave(paste0("data/songs/",song_filenames[replacement_index]),
+                      from = input$setstarttime2,
+                      to = input$setstarttime2 + input$duration,
+                      units = "seconds"))
+    })
+    return(file)
   })
   
+  # Generate signal from left stereo output.
   signal2 <- reactive({
     wav_file2()@left - mean(wav_file2()@left)
   })
   
   song_file_name <- reactive({
-    song_name <- "Piano Concerto No. 2 in C Minor, Op. 18: 2. Adagio sostenuto"
-    paste0("data/songs/",str_replace_all(song_name,":","_"),".wav")
+    song_name <- paste0(str_replace_all(strtrim(input$updateSong,96),
+                                        c('":' = '_',
+                                          ':"' = '_',
+                                          ":" = "_", 
+                                          "/" = "_",
+                                          '"' = '_')),".wav")
+    
   })
   
   wav_file <- eventReactive(input$spectro, {
-    readWave(song_file_name(),
-             from = input$setstarttime,
-             to = input$setstarttime + input$duration,
-             units = "seconds")
+    file <- tryCatch({
+      return(readWave(paste0("data/songs/",song_file_name()),
+                      from = input$setstarttime,
+                      to = input$setstarttime + input$duration,
+                      units = "seconds"))
+    },
+    error = function(cond) {
+      replacement_index <- amatch(substring(song_file_name(),1,25), 
+                                  substring(song_filenames,1,25), 
+                                  method = "dl",
+                                  maxDist = 5)
+      return(readWave(paste0("data/songs/",song_filenames[replacement_index]),
+                      from = input$setstarttime,
+                      to = input$setstarttime + input$duration,
+                      units = "seconds"))
+    })
+    return(file)
   })
   
   signal <- reactive({
     wav_file()@left - mean(wav_file()@left)
   })
   
+  # Create signal tibbles and generate faceted waveform plots.
   output$waveform <- renderPlot({
     signal_tbl <- tibble(Signal = signal(), 
                          Samples = (1:length(signal())),
@@ -785,6 +867,7 @@ shinyServer(function(input, output, session) {
     plot(wave_plot)
   })
   
+  # Generate spectrograms for each sample.
   output$spectrogram <- renderPlot({
     if(input$spectro_sample == "Sample 1") {
       ggspectro(signal(), f = wav_file()@samp.rate, ovlp = 50) + 
@@ -823,20 +906,21 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  # Generate spectrogram covariance data.
   cov_spec_data <- eventReactive(input$spectro, {
-    number_of_covs <- 21
+    number_of_covs <- 37
     cov_spec_data <- covspectro(signal(), 
                                 signal2(), 
                                 f = wav_file()@samp.rate,
                                 n = number_of_covs,
                                 plot = F) %>% 
       as_tibble() %>% 
-      mutate(time = seq(0,
+      mutate(time = seq(-input$duration,
                         input$duration, 
-                        by = input$duration/(number_of_covs - 1)))
-    
+                        by = (input$duration * 2)/(number_of_covs - 1)))
   })
   
+  # Generate time at which max covariance is attained.
   x_covmax <- eventReactive(input$spectro, {
     cov_spec_data() %>% 
       filter(cov == covmax) %>% 
@@ -844,6 +928,7 @@ shinyServer(function(input, output, session) {
       .[[1]]
   })
   
+  # Generate spectrogram covariance plot.
   output$spectrogram_cov <- renderPlot({
     
     ggplot(cov_spec_data(), 
@@ -872,9 +957,11 @@ shinyServer(function(input, output, session) {
                     label = round(cov_spec_data()$covmax,2)),
                 color = "red",
                 size = 5,
-                check_overlap = TRUE)
+                check_overlap = TRUE,
+                inherit.aes = FALSE)
   })
   
+  # Include filters if on the sound analysis tab, otherwise hide.
   observeEvent(input$primary_tabs, {
     if(input$primary_tabs == "spectrogram_active") {
       show(id = "composer2", anim = TRUE, animType = "fade")
@@ -899,12 +986,14 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  # Error message for individual plots.
   cleave(
     html = p("Not available. Please try again."),
     color = "#fafafa",
     bg_color = "#000029"
   )
   
+  # Disconnect screen.
   sever(html = disconnected,
         bg_image = disconnect_image, 
         color = "#fafafa")
