@@ -1,5 +1,6 @@
 shinyUI(
   tagList(
+    # Import tags for use later, including CSS stylesheets.
     useShinyjs(),
     useSever(),
     tags$head(
@@ -11,6 +12,7 @@ shinyUI(
         rel = "stylesheet",
         href = "https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
       )),
+    # Initiate loaders.
     autoWaiter(id = c("frame", 
                       "comparison_density", 
                       "circlebarplot", 
@@ -24,11 +26,13 @@ shinyUI(
                       "spectrogram_cov"),
                html = spin_wave(), 
                color = '#000029'),
+    # Framework for overall design.
     navbarPage("Nessun Data!",
                tabPanel("", 
                         icon = icon('book','fa-2x'),
                         value = "about_active",
                         sidebarLayout(
+                          # Create about sidebar.
                           sidebarPanel(id = "about_sidebar",
                                        h2("About"),
                                        p("It's no surprise that data is powerful.
@@ -56,6 +60,7 @@ shinyUI(
                               specific problem in musicology and music theory: Can we
                               determine what period a piece is from or which composer 
                               composed it based on its musical characteristics?")),
+                          # Create timeline space.
                           mainPanel(id = "about_info",
                                     h4("Timeline of Western Music",
                                        style = "text-align: center;"),
@@ -69,6 +74,7 @@ shinyUI(
                         icon = icon('chart-bar','fa-2x'),
                         value = "plots_active",
                         sidebarLayout(
+                          # Sidebar for composer and song select and Spotify player.
                           sidebarPanel(
                             pickerInput(inputId = "composer",
                                         label = "Select Composer:",
@@ -80,6 +86,7 @@ shinyUI(
                             selectizeInput("updateSong", 
                                            "Select Song:", 
                                            choices = NULL),
+                            # To be used in sound analysis tab.
                             pickerInput(inputId = "composer2",
                                         label = "Select a Second Composer:",
                                         choices = unique(general_audio_values$composer),
@@ -98,6 +105,7 @@ shinyUI(
                                         tabPanel("",
                                                  icon = icon('chart-pie','fa-2x'),
                                                  value = "descriptive_active",
+                                                 # Create space for density plot and applicable selectors.
                                                  fluidRow(
                                                    column(width = 3,
                                                           HTML("<h4><b>Comparison Analysis</b></h4>"),
@@ -152,6 +160,7 @@ shinyUI(
                                                  ),
                                                  br(),
                                                  hr(color = "#d1d1d1"),
+                                                 # Create circle bar plot and timbre bar plot space with selectors.
                                                  fluidRow(
                                                    HTML("<h4><b>Song Pitch and Timbre Analysis</b></h4>"),
                                                    br(),
@@ -177,6 +186,7 @@ shinyUI(
                                         tabPanel("",
                                                  icon = icon('chart-line','fa-2x'),
                                                  value = "logistic_active",
+                                                 # Create regression analysis datatable space and selectors.
                                                  fluidRow(
                                                    column(width = 3,
                                                           HTML("<h4><b>Regression Analysis</br>
@@ -184,7 +194,7 @@ shinyUI(
                                                     br(),
                                                     selectInput(
                                                       inputId = "regression_comparison_group",
-                                                      label = "Choose Regression Comparison Group:", 
+                                                      label = "Choose Comparison Group:", 
                                                       choices = c("Medieval/Renaissance",
                                                                   "Baroque/Classical",
                                                                   "Romantic",
@@ -224,6 +234,7 @@ shinyUI(
                                                  ),
                                                  br(),
                                                  hr(color = "#d1d1d1"),
+                                                 # Create logistic regression curve and confusion matrix spaces.
                                                  fluidRow(
                                                    column(width = 6,
                                                           plotOutput("confusion_matrix"),
@@ -237,6 +248,7 @@ shinyUI(
                                         tabPanel("",
                                                  icon = icon('volume-up','fa-2x'),
                                                  value = "spectrogram_active",
+                                                 # Create waveform graph space and selectors.
                                                  fluidRow(column(3,
                                                                  actionBttn(
                                                                    inputId = "spectro",
@@ -276,6 +288,7 @@ shinyUI(
                                                                  plotOutput("waveform"))),
                                                  br(),
                                                  hr(color = "#d1d1d1"),
+                                                 # Create spectrogram and spectrogram covariance spaces.
                                                  fluidRow(column(6,
                                                                  plotOutput("spectrogram"),
                                                                  style = 'border-right: 1px solid #d1d1d1; height: 400px;'),
