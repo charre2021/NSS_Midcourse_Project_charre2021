@@ -35,7 +35,7 @@ The third section (represented by the “Bar Chart” and “Line Chart” icons
 The fourth section (represented by the “Bar Chart” and “Volume” icons) allows a user to analyze two small sections of music through waveform, spectrogram and spectrogram covariance plots.
 
 <p align = "center">
-    <img src = "https://user-images.githubusercontent.com/86251317/150445899-10ec95ac-b099-4497-8b1e-f29a58d97fd9.png" />
+    <img src = "https://user-images.githubusercontent.com/86251317/150620916-d4c0028b-3e12-4115-a127-0cd802505a42.gif" />
 </p>
 
 **Further Discovery:**
