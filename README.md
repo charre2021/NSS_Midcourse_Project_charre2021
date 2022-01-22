@@ -29,7 +29,7 @@ The second section (represented by the “Bar Chart” and “Pie Chart” icons
 The third section (represented by the “Bar Chart” and “Line Chart” icons) allows a user to filter by composer and run a logistic regression to determine whether certain pitch class and timbre scores by section can predict the correct composer.
 
 <p align = "center">
-    <img src = "https://user-images.githubusercontent.com/86251317/150273832-66d69c61-f59f-4e4c-b999-06cdc455b3c3.png" />
+    <img src = "https://user-images.githubusercontent.com/86251317/150620690-da8979de-e0b3-4906-ae8a-389e9a7fbfa2.gif" />
 </p>
 
 The fourth section (represented by the “Bar Chart” and “Volume” icons) allows a user to analyze two small sections of music through waveform, spectrogram and spectrogram covariance plots.
