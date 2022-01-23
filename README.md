@@ -12,6 +12,8 @@ Using the Spotify Web API, I analyzed objective variables from **2,066** pieces 
 
 **The App:**
 
+The App is currently hosted on ShinyApps.io <a href="https://vzwfqh-charre2021.shinyapps.io/NessunData/">here</a>.
+
 The R Shiny App is separated into four main parts as shown below. Code is located <a href="https://github.com/charre2021/NSS_Midcourse_Project_charre2021/tree/main/NSS_Midcourse_Project">here</a>.
 
 The first section (represented by the “Book” icon) contains a summary of the R Shiny App, as well as a composer timeline. Users may click on the pictures of this timeline and pull up information regarding the various composers analyzed.
