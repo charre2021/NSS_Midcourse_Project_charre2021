@@ -1,5 +1,23 @@
 shinyServer(function(input, output, session) {
   
+  # Update density comparison radio buttons based on value.
+  observeEvent(input$comparison_value, {
+    
+    if(input$comparison_value == "Loudness") {
+      updateAwesomeRadio(session,
+                         "confidence_or_value",
+                         choices = "Value",
+                         selected = "Value",
+                         inline = TRUE)
+    } else {
+      updateAwesomeRadio(session,
+                         "confidence_or_value",
+                         choices = c("Confidence", "Value"),
+                         inline = TRUE)
+    }
+    
+  })
+  
   # Set seed value for logistic regression.
   seed <- reactiveValues(seed_value = 36)
   
@@ -707,7 +725,7 @@ shinyServer(function(input, output, session) {
   })
   
   filtered_by_composer_and_song2 <- reactive({
-    filtered_by_composer() %>% 
+    filtered_by_composer2() %>% 
       filter(track_name == input$updateSong2)
   })
   
@@ -737,9 +755,14 @@ shinyServer(function(input, output, session) {
       summarize(section_start + section_duration) %>% 
       pull()
     
+    length_of_song <- length_of_song - 5
+    
     updateNumericInput(session,
                        "setstarttime",
-                       max = length_of_song)
+                       value = floor(length_of_song/2),
+                       min = 0,
+                       max = length_of_song,
+                       step = 1)
   })
   
   observeEvent(input$updateSong2,{
@@ -756,9 +779,14 @@ shinyServer(function(input, output, session) {
       summarize(section_start + section_duration) %>% 
       pull()
     
+    length_of_song <- length_of_song - 5
+    
     updateNumericInput(session,
-                       "setstarttime",
-                       max = length_of_song)
+                       "setstarttime2",
+                       value = floor(length_of_song/2),
+                       min = 0,
+                       max = length_of_song,
+                       step = 1)
   })
   
   # Pull in song name and match to file name.
